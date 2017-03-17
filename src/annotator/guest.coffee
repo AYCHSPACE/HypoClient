@@ -51,6 +51,7 @@ module.exports = class Guest extends Annotator
   anchors: null
   visibleHighlights: false
   guestDocument: null
+  guestId: null
 
   html: extend {}, Annotator::html,
     adder: '<hypothesis-adder></hypothesis-adder>';
@@ -61,6 +62,7 @@ module.exports = class Guest extends Annotator
 
     self = this
     this.guestDocument = guestElement.ownerDocument
+    this.guestId = options.guestId
 
     this.adderCtrl = new adder.Adder(@adder[0], {
       onAnnotate: ->
@@ -80,18 +82,26 @@ module.exports = class Guest extends Annotator
 
     this.anchors = []
 
+    this._setCrossframe(options.crossframe) unless !options.crossframe
+
+    # Load plugins
+#    for own name, opts of @options
+#      if not @plugins[name] and Annotator.Plugin[name]
+#        this.addPlugin(name, opts)
+
+  _setCrossframe: (crossframe) ->
     cfOptions =
       on: (event, handler) =>
         this.subscribe(event, handler)
       emit: (event, args...) =>
         this.publish(event, args)
 
-    this.addPlugin('CrossFrame', cfOptions)
-    @crossframe = this.plugins.CrossFrame
+    this.plugins.CrossFrame = @options.crossframe
+    @crossframe = @options.crossframe
 
-    @crossframe.onConnect(=> this.publish('panelReady'))
-    this._connectAnnotationSync(@crossframe)
-    this._connectAnnotationUISync(@crossframe)
+#    @crossframe.annotationSync.registerMethods(cfOptions, this.guestId)
+#    this._connectAnnotationSync(@crossframe)
+#    this._connectAnnotationUISync(@crossframe)
 
     # Load plugins
     for own name, opts of @options

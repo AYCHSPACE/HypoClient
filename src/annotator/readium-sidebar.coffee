@@ -17,7 +17,12 @@ module.exports = class ReadiumSidebar extends Sidebar
 
     ReadiumSDK.once(ReadiumSDK.Events.READER_INITIALIZED, (readium) =>
       readium.once(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, ($iframe, spineItem) =>
-        options.guestElement = $iframe[0].contentDocument.body
+#        options.guestElement = $iframe[0].contentDocument.body
         super(element, options)
+
+        readium.on(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, ($iframe, spineItem) =>
+          guestElement = $iframe[0].contentDocument.body
+          this.addGuest(guestElement, spineItem.href)
+        )
       )
     )

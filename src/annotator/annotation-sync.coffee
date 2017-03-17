@@ -29,6 +29,12 @@ module.exports = class AnnotationSync
     for method, func of @_channelListeners
       @bridge.on(method, func.bind(this))
 
+  registerMethods: (options, guestId) ->
+    @_on = options.on
+    @_emit = options.emit
+    for method, func of @_channelListeners
+      @bridge.on(method, func.bind(this), guestId)
+
   sync: (annotations) ->
     annotations = (this._format a for a in annotations)
     @bridge.call 'sync', annotations, (err, annotations = []) =>
