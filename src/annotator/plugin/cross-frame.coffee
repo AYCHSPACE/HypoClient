@@ -37,11 +37,14 @@ module.exports = class CrossFrame extends Annotator.Plugin
     this.sync = (annotations, cb) ->
       @annotationSync.sync(annotations, cb)
 
-    this.on = (event, fn) ->
-      bridge.on(event, fn)
+    this.on = (event, fn, guestId) ->
+      bridge.on(event, fn, guestId)
 
     this.call = (message, args...) ->
       bridge.call(message, args...)
 
     this.onConnect = (fn) ->
       bridge.onConnect(fn)
+
+    this.removeGuestListener = (guestId) ->
+      bridge.removeGuestListener(guestId)

@@ -84,6 +84,7 @@ module.exports = class Guest extends Annotator
 
     this._setCrossframe(options.crossframe) unless !options.crossframe
 
+    # THESIS TODO: Do guests need these plugins?
     # Load plugins
 #    for own name, opts of @options
 #      if not @plugins[name] and Annotator.Plugin[name]
@@ -99,9 +100,9 @@ module.exports = class Guest extends Annotator
     this.plugins.CrossFrame = @options.crossframe
     @crossframe = @options.crossframe
 
-#    @crossframe.annotationSync.registerMethods(cfOptions, this.guestId)
-#    this._connectAnnotationSync(@crossframe)
-#    this._connectAnnotationUISync(@crossframe)
+    @crossframe.annotationSync.registerMethods(cfOptions, this.guestId)
+    this._connectAnnotationSync(@crossframe)
+    this._connectAnnotationUISync(@crossframe, @guestId)
 
     # Load plugins
     for own name, opts of @options
@@ -137,24 +138,28 @@ module.exports = class Guest extends Annotator
       for annotation in annotations
         this.anchor(annotation)
 
-  _connectAnnotationUISync: (crossframe) ->
+  _connectAnnotationUISync: (crossframe, guestId) ->
     crossframe.on 'focusAnnotations', (tags=[]) =>
       for anchor in @anchors when anchor.highlights?
         toggle = anchor.annotation.$tag in tags
         $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
+    , guestId
 
     crossframe.on 'scrollToAnnotation', (tag) =>
       for anchor in @anchors when anchor.highlights?
         if anchor.annotation.$tag is tag
           scrollIntoView(anchor.highlights[0])
+    , guestId
 
     crossframe.on 'getDocumentInfo', (cb) =>
       this.getDocumentInfo()
       .then((info) -> cb(null, info))
       .catch((reason) -> cb(reason))
+    , guestId
 
     crossframe.on 'setVisibleHighlights', (state) =>
       this.setVisibleHighlights(state)
+    , guestId
 
   _setupWrapper: ->
     @wrapper = @element
@@ -182,6 +187,7 @@ module.exports = class Guest extends Annotator
       @plugins[name].destroy()
 
     this.removeEvents()
+    @crossframe.removeGuestListener(@guestId)
 
   anchor: (annotation) ->
     self = this

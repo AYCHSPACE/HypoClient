@@ -50,14 +50,16 @@ module.exports = class Host extends Annotator
         this.addPlugin(name, opts)
 
     app.appendTo(@frame)
+    @showHighlights = options.showHighlights || true
 
+    # THESIS TODO: Remove this code if it's not needed
 #    this.on 'panelReady', =>
 #      # Initialize tool state.
 #      if options.showHighlights == undefined
 #        # Highlights are on by default.
 #        options.showHighlights = true
 #      this.setVisibleHighlights(options.showHighlights)
-#
+
     # Show the UI
     @frame.css('display', '')
 
@@ -72,8 +74,19 @@ module.exports = class Host extends Annotator
     options = @options
     options.guestId = guestId
     options.crossframe = @crossframe
-    this.guests[guestId] = new Guest(guestElement, options)
+    guest = new Guest(guestElement, options)
+    guest.setVisibleHighlights(@showHighlights)
 
+    this.guests[guestId] = guest
 
   destroy: ->
     @frame.remove()
+    @destroyAllGuests()
+
+  destroyAllGuests: ->
+    for guestId, guest of @guests
+      destroyGuest(guestId)
+
+  destroyGuest: (guestId) ->
+    @guests[guestId].destroy()
+    delete @guests[guestId]
