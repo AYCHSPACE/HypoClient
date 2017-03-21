@@ -63,6 +63,8 @@ module.exports = class Guest extends Annotator
     self = this
     this.guestDocument = guestElement.ownerDocument
     this.guestId = options.guestId
+    # THESIS TODO: Consider using a trigger instead, via crossframe
+    this.showSidebarCb = options.showSidebarCb
 
     this.adderCtrl = new adder.Adder(@adder[0], {
       onAnnotate: ->
@@ -319,6 +321,7 @@ module.exports = class Guest extends Annotator
 
     ranges = @selectedRanges ? []
     @selectedRanges = null
+    @showSidebarCb() unless annotation.$highlight
 
     getSelectors = (range) ->
       options = {
@@ -371,6 +374,7 @@ module.exports = class Guest extends Annotator
   showAnnotations: (annotations) ->
     tags = (a.$tag for a in annotations)
     @crossframe?.call('showAnnotations', tags)
+    @showSidebarCb()
 
   toggleAnnotationSelection: (annotations) ->
     tags = (a.$tag for a in annotations)
