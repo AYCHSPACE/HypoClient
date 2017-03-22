@@ -86,7 +86,8 @@ module.exports = class Guest extends Annotator
 
     this._setCrossframe(options.crossframe) unless !options.crossframe
 
-    # THESIS TODO: Do guests need these plugins?
+    @plugins = @options.plugins
+    # THESIS TODO: Do guests need this code? Currently they're just passed in via options from Host
     # Load plugins
 #    for own name, opts of @options
 #      if not @plugins[name] and Annotator.Plugin[name]
@@ -99,17 +100,11 @@ module.exports = class Guest extends Annotator
       emit: (event, args...) =>
         this.publish(event, args)
 
-    this.plugins.CrossFrame = @options.crossframe
     @crossframe = @options.crossframe
 
-    @crossframe.annotationSync.registerMethods(cfOptions, this.guestId)
+    @crossframe.registerMethods(cfOptions, this.guestId)
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe, @guestId)
-
-    # Load plugins
-    for own name, opts of @options
-      if not @plugins[name] and Annotator.Plugin[name]
-        this.addPlugin(name, opts)
 
   # Get the document info
   getDocumentInfo: ->
