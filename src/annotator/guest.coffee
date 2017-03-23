@@ -180,8 +180,8 @@ module.exports = class Guest extends Annotator
 
     @element.data('annotator', null)
 
-    for name, plugin of @plugins
-      @plugins[name].destroy()
+#    for name, plugin of @plugins
+#      @plugins[name].destroy()
 
     this.removeEvents()
     @crossframe.removeGuestListener(@guestId)
