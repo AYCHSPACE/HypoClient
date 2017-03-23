@@ -56,11 +56,10 @@ module.exports = class Guest extends Annotator
     adder: '<hypothesis-adder></hypothesis-adder>';
 
   constructor: (element, options) ->
-    guestElement = options.guestElement || element
-    super(guestElement, options)
+    super
 
     self = this
-    this.guestDocument = guestElement.ownerDocument
+    this.guestDocument = element.ownerDocument
 
     this.adderCtrl = new adder.Adder(@adder[0], {
       onAnnotate: ->
