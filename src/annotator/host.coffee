@@ -70,6 +70,8 @@ module.exports = class Host extends Annotator
       if !annotation.$highlight
         app[0].contentWindow.focus()
 
+    @addGuest(element, "default", options)
+
   addGuest: (guestElement, guestId, options) ->
     options = @options
     options.guestId = guestId

@@ -102,6 +102,7 @@ module.exports = class Guest extends Annotator
 
     @crossframe = @options.crossframe
 
+    @crossframe.reloadAnnotations()
     @crossframe.registerMethods(cfOptions, this.guestId)
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe, @guestId)
@@ -185,6 +186,7 @@ module.exports = class Guest extends Annotator
 
     this.removeEvents()
     @crossframe.removeGuestListener(@guestId)
+    @crossframe.removeMethods(@guestId)
 
   anchor: (annotation) ->
     self = this
