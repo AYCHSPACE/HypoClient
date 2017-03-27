@@ -90,6 +90,7 @@ module.exports = class Guest extends Annotator
     # so a crossframe needs to be set
     if (options.crossframe)
       this._setCrossframe(options.crossframe)
+      @setVisibleHighlights(options.showHighlights)
     else
     # Otherwise, the crossframe and plugins have to be instantiated
       cfOptions =
@@ -125,8 +126,6 @@ module.exports = class Guest extends Annotator
     @crossframe.registerMethods(cfOptions, this.guestId)
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe, @guestId)
-
-    if typeof @options.showHighlights == 'boolean' then @setVisibleHighlights(@options.showHighlights)
 
   # Get the document info
   getDocumentInfo: ->
@@ -469,6 +468,7 @@ module.exports = class Guest extends Annotator
 
   # Pass true to show the highlights in the frame or false to disable.
   setVisibleHighlights: (shouldShowHighlights) ->
+    if typeof shouldShowHighlights == "undefined" then shouldShowHighlights = true
     @crossframe?.call('setVisibleHighlights', shouldShowHighlights)
     this.toggleHighlightClass(shouldShowHighlights)
     this.publish 'setVisibleHighlights', shouldShowHighlights
