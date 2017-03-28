@@ -109,8 +109,6 @@ module.exports = class Guest extends Annotator
       this._connectAnnotationSync(@crossframe)
       this._connectAnnotationUISync(@crossframe, @guestId)
 
-      # THESIS TODO: Tests require this to be in Guest
-      # Investigate to see if any issues arise
       @crossframe.onConnect(=> this.publish('panelReady'))
 
   _setCrossframe: (crossframe) ->
@@ -202,10 +200,9 @@ module.exports = class Guest extends Annotator
     @element.data('annotator', null)
 
     this.removeEvents()
-    # THESIS TODO: 'unless' is required to pass certain tests
-    # May be a rise for concern, why doesn't crossframe have these methods during the test?
-    @crossframe.removeGuestListener(@guestId) unless !@crossframe.removeGuestListener
-    @crossframe.removeMethods(@guestId) unless !@crossframe.removeMethods
+
+    @crossframe.removeGuestListener(@guestId)
+    @crossframe.removeMethods(@guestId)
 
   anchor: (annotation) ->
     self = this
