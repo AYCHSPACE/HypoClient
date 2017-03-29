@@ -80,30 +80,21 @@ module.exports = class Guest extends Annotator
     # If options.crossframe is set, it is assumed that this is NOT the default guest, and
     # so a crossframe needs to be set
     if (options.crossframe)
-      this._setCrossframe(options.crossframe)
+      @_setCrossframe(options.crossframe)
       @setVisibleHighlights(options.showHighlights)
       @adderCtrl = options.adderCtrl
-    else
-    # Otherwise, the crossframe and plugins have to be instantiated
-      cfOptions =
-        on: (event, handler) =>
-          this.subscribe(event, handler)
-        emit: (event, args...) =>
-          this.publish(event, args)
+    else # Otherwise, the crossframe and plugins have to be initialized
+      @_setupDefaultGuest()
 
-      this.addPlugin('CrossFrame', cfOptions)
-      @crossframe = @plugins.CrossFrame
+  _setupDefaultGuest: ->
+    @_setCrossframe()
 
-      for own name, opts of @options
-        if not @plugins[name] and Annotator.Plugin[name]
-          this.addPlugin(name, opts)
+    for own name, opts of @options
+      if not @plugins[name] and Annotator.Plugin[name]
+        this.addPlugin(name, opts)
 
-      this._connectAnnotationSync(@crossframe)
-      this._connectAnnotationUISync(@crossframe, @guestId)
-
-      @crossframe.onConnect(=> this.publish('panelReady'))
-
-      this.adderCtrl = new adder.Adder(@adder[0])
+    @crossframe.onConnect(=> this.publish('panelReady'))
+    this.adderCtrl = new adder.Adder(@adder[0])
 
   _setCrossframe: (crossframe) ->
     cfOptions =
@@ -112,10 +103,14 @@ module.exports = class Guest extends Annotator
       emit: (event, args...) =>
         this.publish(event, args)
 
-    @crossframe = @options.crossframe
+    if (crossframe)
+      @crossframe = @options.crossframe
+      @crossframe.reloadAnnotations()
+      @crossframe.registerMethods(cfOptions, this.guestId)
+    else
+      this.addPlugin('CrossFrame', cfOptions)
+      @crossframe = @plugins.CrossFrame
 
-    @crossframe.reloadAnnotations()
-    @crossframe.registerMethods(cfOptions, this.guestId)
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe, @guestId)
 
