@@ -62,8 +62,8 @@ module.exports = class Guest extends Annotator
     if !options then options = {}
 
     self = this
-    this.guestDocument = element.ownerDocument
-    this.guestId = options.guestId || "default"
+    @guestDocument = element.ownerDocument
+    @guestId = options.guestId || "default"
     # THESIS TODO: Consider using a trigger instead, via crossframe
     @showSidebarCb = options.showSidebarCb
 
@@ -74,7 +74,7 @@ module.exports = class Guest extends Annotator
         else
           self._onClearSelection()
 
-    this.anchors = []
+    @anchors = []
     @plugins = options.hostPlugins unless !options.hostPlugins
 
     # If options.crossframe is set, it is assumed that this is NOT the default guest, and
@@ -91,28 +91,28 @@ module.exports = class Guest extends Annotator
 
     for own name, opts of @options
       if not @plugins[name] and Annotator.Plugin[name]
-        this.addPlugin(name, opts)
+        @addPlugin(name, opts)
 
-    @crossframe.onConnect(=> this.publish('panelReady'))
-    this.adderCtrl = new adder.Adder(@adder[0])
+    @crossframe.onConnect(=> @publish('panelReady'))
+    @adderCtrl = new adder.Adder(@adder[0])
 
   _setCrossframe: (crossframe) ->
     cfOptions =
       on: (event, handler) =>
-        this.subscribe(event, handler)
+        @subscribe(event, handler)
       emit: (event, args...) =>
-        this.publish(event, args)
+        @publish(event, args)
 
     if (crossframe)
       @crossframe = @options.crossframe
       @crossframe.reloadAnnotations()
       @crossframe.registerMethods(cfOptions, this.guestId)
     else
-      this.addPlugin('CrossFrame', cfOptions)
+      @addPlugin('CrossFrame', cfOptions)
       @crossframe = @plugins.CrossFrame
 
-    this._connectAnnotationSync(@crossframe)
-    this._connectAnnotationUISync(@crossframe, @guestId)
+    @_connectAnnotationSync(@crossframe)
+    @_connectAnnotationUISync(@crossframe, @guestId)
 
   # Get the document info
   getDocumentInfo: ->

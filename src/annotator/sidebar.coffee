@@ -115,7 +115,7 @@ module.exports = class Sidebar extends Host
 
     guestEl.on 'click', (event) =>
       if !@selectedTargets?.length
-        this.hide()
+        @hide()
 
   onPan: (event) =>
     switch event.type
