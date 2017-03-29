@@ -67,15 +67,6 @@ module.exports = class Guest extends Annotator
     # THESIS TODO: Consider using a trigger instead, via crossframe
     @showSidebarCb = options.showSidebarCb
 
-    this.adderCtrl = new adder.Adder(@adder[0], {
-      onAnnotate: ->
-        self.createAnnotation()
-        self.guestDocument.getSelection().removeAllRanges()
-      onHighlight: ->
-        self.setVisibleHighlights(true)
-        self.createHighlight()
-        self.guestDocument.getSelection().removeAllRanges()
-    })
     this.selections = selections(@guestDocument).subscribe
       next: (range) ->
         if range
@@ -91,6 +82,7 @@ module.exports = class Guest extends Annotator
     if (options.crossframe)
       this._setCrossframe(options.crossframe)
       @setVisibleHighlights(options.showHighlights)
+      @adderCtrl = options.adderCtrl
     else
     # Otherwise, the crossframe and plugins have to be instantiated
       cfOptions =
@@ -110,6 +102,8 @@ module.exports = class Guest extends Annotator
       this._connectAnnotationUISync(@crossframe, @guestId)
 
       @crossframe.onConnect(=> this.publish('panelReady'))
+
+      this.adderCtrl = new adder.Adder(@adder[0])
 
   _setCrossframe: (crossframe) ->
     cfOptions =
@@ -401,6 +395,15 @@ module.exports = class Guest extends Annotator
     tags = (a.$tag for a in annotations)
     @crossframe?.call('focusAnnotations', tags)
 
+  _onAnnotate: ->
+    @createAnnotation()
+    @guestDocument.getSelection().removeAllRanges()
+
+  _onHighlight: ->
+    @setVisibleHighlights(true)
+    @createHighlight()
+    @guestDocument.getSelection().removeAllRanges()
+
   _onSelection: (range) ->
     selection = @guestDocument.getSelection()
     isBackwards = rangeUtil.isSelectionBackwards(selection)
@@ -417,7 +420,13 @@ module.exports = class Guest extends Annotator
       .removeClass('h-icon-note')
       .addClass('h-icon-annotate');
 
+    this.adderCtrl.setCommands({
+      "onAnnotate": @_onAnnotate.bind(this),
+      "onHighlight": @_onHighlight.bind(this)
+    })
+    this.adderCtrl.setGuestElement(@guestDocument.body)
     {left, top, arrowDirection} = this.adderCtrl.target(focusRect, isBackwards)
+
     this.adderCtrl.showAt(left, top, arrowDirection)
 
   _onClearSelection: () ->
