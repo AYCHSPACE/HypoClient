@@ -140,12 +140,13 @@ module.exports = class Guest extends Annotator
       return {uri: normalizeURI(href, baseURI), metadata}
 
   _connectAnnotationSync: (crossframe) ->
+    self = this
     this.subscribe 'annotationDeleted', (annotation) =>
       this.detach(annotation)
 
     this.subscribe 'annotationsLoaded', (annotations) =>
       for annotation in annotations
-        this.anchor(annotation)
+        if (annotation.guestId == self.guestId) then this.anchor(annotation)
 
   _connectAnnotationUISync: (crossframe, guestId) ->
     crossframe.on 'focusAnnotations', (tags=[]) =>

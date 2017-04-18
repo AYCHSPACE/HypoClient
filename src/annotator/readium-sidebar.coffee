@@ -18,6 +18,8 @@ module.exports = class ReadiumSidebar extends Sidebar
     ReadiumSDK.once(ReadiumSDK.Events.READER_INITIALIZED, (readium) =>
       readium.on(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, ($iframe, spineItem) =>
         guestElement = $iframe[0].contentDocument.body
+        # THESIS TODO: the chapter identifier is passed in as the guestId
+        # Do we want this id to be more unique?
         this.addGuest(guestElement, spineItem.href)
         @injectCSS($iframe)
       )

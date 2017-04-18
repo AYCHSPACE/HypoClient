@@ -55,8 +55,6 @@ module.exports = class AnnotationSync
     this
 
   # Handlers for messages arriving through a channel
-  # THESIS TODO: all @_emit's are looped over. Eventually, we want a guestId to be passed in,
-  # so that we can avoid such a needless loop
   _channelListeners:
     'deleteAnnotation': (body, cb) ->
       annotation = this._parse(body)
@@ -67,8 +65,11 @@ module.exports = class AnnotationSync
 
     'loadAnnotations': (bodies, cb) ->
       annotations = (this._parse(a) for a in bodies)
-      for key, emit of @_emit
-        emit('annotationsLoaded', annotations)
+      # All annotations passed in should be a part of the same guest
+      # Therefore, the guestId can be grabbed from the first annotation
+      guestId = annotations[0].guestId
+
+      @_emit[guestId]('annotationsLoaded', annotations) unless !@_emit[guestId]
       cb(null, annotations)
 
   # Handlers for events coming from this frame, to send them across the channel
