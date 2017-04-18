@@ -62,11 +62,9 @@ module.exports = class Guest extends Annotator
     if !options then options = {}
 
     self = this
+    @_eventListeners = {}
     @guestDocument = element.ownerDocument
     @guestId = options.guestId || "default"
-    # THESIS TODO: With great power, comes great responsibility.
-    # This may be too much power... have a discussion about it.
-    @hostCallback = options.hostCallback
 
     this.selections = selections(@guestDocument).subscribe
       next: (range) ->
@@ -187,6 +185,17 @@ module.exports = class Guest extends Annotator
   _setupDocumentEvents: -> this
   _setupDynamicStyle: -> this
 
+  trigger: (eventName, args...) ->
+    return unless @_eventListeners[eventName]
+
+    for method in @_eventListeners[eventName]
+      method.apply(this, args)
+
+  listenTo: (eventName, method) ->
+    @_eventListeners[eventName] = [] unless @_eventListeners[eventName]
+
+    @_eventListeners[eventName].push(method)
+
   destroy: ->
     $('#annotator-dynamic-style').remove()
 
@@ -278,7 +287,7 @@ module.exports = class Guest extends Annotator
       self.anchors = self.anchors.concat(anchors)
 
       # Tell the host about the new information
-      self.hostCallback('updateAnchors')
+      self.trigger('anchorsSynced')
 
       # Let plugins know about the new information.
       self.plugins.BucketBar?.update()
@@ -337,7 +346,7 @@ module.exports = class Guest extends Annotator
 
     ranges = @selectedRanges ? []
     @selectedRanges = null
-    @hostCallback('show') unless annotation.$highlight || !@hostCallback
+    @trigger('createAnnotation')
 
     getSelectors = (range) ->
       options = {
@@ -401,7 +410,7 @@ module.exports = class Guest extends Annotator
   showAnnotations: (annotations) ->
     tags = (a.$tag for a in annotations)
     @crossframe?.call('showAnnotations', tags)
-    @hostCallback('show') unless !@hostCallback
+    @trigger('showAnnotations')
 
   toggleAnnotationSelection: (annotations) ->
     tags = (a.$tag for a in annotations)

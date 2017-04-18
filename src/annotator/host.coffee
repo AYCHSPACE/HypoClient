@@ -67,11 +67,14 @@ module.exports = class Host extends Annotator
   addGuest: (guestElement, guestId, guestOptions) ->
     options = guestOptions
     options.guestId = guestId
-    options.hostCallback = @_hostCallback.bind(this)
     if @crossframe then options.crossframe = @crossframe
     if @adderCtrl then options.adderCtrl = @adderCtrl
     guest = new Guest(guestElement, options)
     guest.setPlugins( @plugins )
+
+    guest.listenTo('showAnnotations', @show.bind(this))
+    guest.listenTo('createAnnotation', @show.bind(this))
+    guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
 
     @guests[guestId] = guest
     return guest
@@ -125,7 +128,4 @@ module.exports = class Host extends Annotator
   # getAnchors loops through all guests each time
   updateAnchors: ->
     @anchors = @getAnchors()
-
-  _hostCallback: (functionName, args...) ->
-    this[functionName].apply(this, args)
 
