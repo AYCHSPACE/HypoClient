@@ -356,6 +356,14 @@ module.exports = class Guest extends Annotator
       source = info.uri
       annotation.target = ({source, selector} for selector in selectors)
 
+      if annotation.target.length && annotation.target[0].selector
+        documentSelector = {
+          type: "DocumentSelector",
+          cfi: self.guestId,
+          id: self.guestId,
+        }
+        annotation.target[0].selector.push(documentSelector)
+
     info = this.getDocumentInfo()
     selectors = Promise.all(ranges.map(getSelectors))
 

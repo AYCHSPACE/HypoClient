@@ -27,6 +27,7 @@ function formatAnnot(ann) {
     tag: ann.$tag,
     msg: {
       document: ann.document,
+      guestId: ann.guestId,
       target: ann.target,
       uri: ann.uri,
     },
@@ -65,7 +66,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
 
     var publicAnns = 0;
     var inSidebar = new Set();
-    var added = [];
+    var guestAnns = {};
 
     state.annotations.forEach(function (annot) {
       if (metadata.isReply(annot)) {
@@ -79,7 +80,19 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
 
       inSidebar.add(annot.$tag);
       if (!inFrame.has(annot.$tag)) {
-        added.push(annot);
+        // Add a guestId to the annotation for future use
+        var documentSelector;
+        if (annot.target.length && annot.target[0].selector) {
+          documentSelector = annot.target[0].selector.find(function(a) {
+            return a.type === 'DocumentSelector';
+          });
+        }
+        // If the guestId is not available, then assume it belongs to the default guest.
+        var guestId = documentSelector ? documentSelector.id : "default";
+        annot.guestId = guestId;
+
+        if (!guestAnns[guestId]) guestAnns[guestId] = [];
+        guestAnns[guestId].push(annot);
       }
     });
     var deleted = prevAnnotations.filter(function (annot) {
@@ -91,12 +104,17 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     // We currently only handle adding and removing annotations from the frame
     // when they are added or removed in the sidebar, but not re-anchoring
     // annotations if their selectors are updated.
-    if (added.length > 0) {
-      bridge.call('loadAnnotations', added.map(formatAnnot));
-      added.forEach(function (annot) {
-        inFrame.add(annot.$tag);
-      });
-    }
+    for(var guestId in guestAnns) {
+      var anns = guestAnns[guestId];
+
+      if (anns.length > 0) {
+        bridge.call('loadAnnotations', anns.map(formatAnnot));
+        anns.forEach(function (annot) {
+          inFrame.add(annot.$tag);
+        });
+      }
+    };
+    // THESIS TODO: Make deleting specific to a specified guestId
     deleted.forEach(function (annot) {
       bridge.call('deleteAnnotation', formatAnnot(annot));
       inFrame.delete(annot.$tag);
@@ -191,8 +209,6 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     discovery.startDiscovery(bridge.createChannel.bind(bridge));
     bridge.onConnect(addFrame);
 
-    window.bridge = bridge;
-    window.discovery = discovery;
     bridge.on('reloadAnnotations', function() {
       // THESIS TODO: This is all temporary code.
       // Since frame-sync can't distinguish between different documents, all annotations are
