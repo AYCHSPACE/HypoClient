@@ -49,9 +49,8 @@ module.exports = class CrossFrame extends Annotator.Plugin
     this.call = (message, args...) ->
       bridge.call(message, args...)
 
-    # THESIS TODO: Temporary name for function. Will need a more suitable name.
-    this.reloadAnnotations = () ->
-      bridge.call("reloadAnnotations");
+    this.loadGuestAnnotations = (guestId) ->
+      bridge.call("loadGuestAnnotations", guestId);
 
     this.onConnect = (fn) ->
       bridge.onConnect(fn)

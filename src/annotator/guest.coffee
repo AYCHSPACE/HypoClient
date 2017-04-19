@@ -99,7 +99,7 @@ module.exports = class Guest extends Annotator
 
     if (crossframe)
       @crossframe = crossframe
-      @crossframe.reloadAnnotations()
+      @crossframe.loadGuestAnnotations(@guestId)
       @crossframe.registerMethods(cfOptions, this.guestId)
     else
       @addPlugin('CrossFrame', cfOptions)

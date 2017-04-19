@@ -81,14 +81,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       inSidebar.add(annot.$tag);
       if (!inFrame.has(annot.$tag)) {
         // Add a guestId to the annotation for future use
-        var documentSelector;
-        if (annot.target.length && annot.target[0].selector) {
-          documentSelector = annot.target[0].selector.find(function(a) {
-            return a.type === 'DocumentSelector';
-          });
-        }
-        // If the guestId is not available, then assume it belongs to the default guest.
-        var guestId = documentSelector ? documentSelector.id : "default";
+        var guestId = _getGuestId(annot);
         annot.guestId = guestId;
 
         if (!guestAnns[guestId]) guestAnns[guestId] = [];
@@ -114,7 +107,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
         });
       }
     };
-    // THESIS TODO: Make deleting specific to a specified guestId
+    // THESIS TODO: Investigate deleting, and how it will function with multiple guests
     deleted.forEach(function (annot) {
       bridge.call('deleteAnnotation', formatAnnot(annot));
       inFrame.delete(annot.$tag);
@@ -201,6 +194,17 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     });
   }
 
+  function _getGuestId(annot) {
+    var documentSelector;
+    if (annot.target.length && annot.target[0].selector) {
+      documentSelector = annot.target[0].selector.find(function(a) {
+        return a.type === 'DocumentSelector';
+      });
+    }
+    // If the guestId is not available, then assume it belongs to the default guest.
+    return documentSelector ? documentSelector.id : "default";
+  }
+
   /**
    * Find and connect to Hypothesis clients in the current window.
    */
@@ -209,24 +213,35 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     discovery.startDiscovery(bridge.createChannel.bind(bridge));
     bridge.onConnect(addFrame);
 
-    bridge.on('reloadAnnotations', function() {
-      // THESIS TODO: This is all temporary code.
-      // Since frame-sync can't distinguish between different documents, all annotations are
-      // already loaded in. Simply reload these annotations again.
+    // THESIS TODO: Temporary code
+    // 
+    // Currently used just to pass the annotations into new guests.
+    bridge.on('loadGuestAnnotations', function(guestId) {
       prevAnnotations = [];
       prevFrames = [];
       prevPublicAnns = 0;
 
       var state = annotationUI.getState();
-      var added = [];
+      var annots = [];
       state.annotations.forEach(function (annot) {
         if (metadata.isReply(annot)) {
           // The frame does not need to know about replies
           return;
         }
-        added.push(annot);
+
+        var annGuestId = _getGuestId(annot);
+
+        // We only want annotations that belong to the new guest
+        if (guestId === annGuestId) {
+          // Add a guestId to the annotation for future use
+          annot.guestId = guestId;
+          annots.push(annot);
+        }
       });
-      bridge.call('loadAnnotations', added.map(formatAnnot));
+
+      if (annots.length > 0) {
+        bridge.call('loadAnnotations', annots.map(formatAnnot));
+      }
     });
 
     setupSyncToFrame();
