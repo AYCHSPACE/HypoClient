@@ -103,6 +103,16 @@ module.exports = class Sidebar extends Host
     annoWrapper = document.getElementsByClassName('annotator-wrapper')[0]
     offset = this.toolbar.css('width')
     annoWrapper.style.marginRight += offset
+    this._temporaryBucketbarStyle(offset)
+
+  # THESIS TODO: This modifies the styling of the BucketBar. Remove at some point.
+  _temporaryBucketbarStyle: (offset) ->
+    bucketEl = this.plugins.BucketBar.element[0]
+    bucketStyle = bucketEl.style
+    bucketStyle.width += offset
+    bucketStyle.left += "-" + offset
+    bucketStyle.borderLeft = "1px solid rgba(0,0,0, 0.07)"
+    bucketStyle.borderRight = "1px solid rgba(0,0,0, 0.03)"
 
   _initializeGestureState: ->
     @gestureState =
