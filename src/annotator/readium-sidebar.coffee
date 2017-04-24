@@ -12,6 +12,7 @@ module.exports = class ReadiumSidebar extends Sidebar
 
   constructor: (element, options) ->
     ReadiumSDK = window.ReadiumSDK
+    options['shiftNativeElements'] = true
     super
 
     ReadiumSDK.once(ReadiumSDK.Events.READER_INITIALIZED, (readium) =>
