@@ -40,6 +40,7 @@ module.exports = class Sidebar extends Host
     @onLoginRequest = options.services?[0]?.onLoginRequest
 
     this._setupSidebarEvents()
+    if options.shiftNativeElements then this._shiftNativeElements()
 
   _setupDocumentEvents: ->
     sidebarTrigger(document.body, => this.show())
@@ -93,6 +94,15 @@ module.exports = class Sidebar extends Host
 
     # Return this for chaining
     this
+
+  # Shift the elements native to the website, so that they don't conflict
+  # with our own.
+  # 
+  # Caution: May break pages using position: fixed / absolute
+  _shiftNativeElements: ->
+    annoWrapper = document.getElementsByClassName('annotator-wrapper')[0]
+    offset = this.toolbar.css('width')
+    annoWrapper.style.marginRight += offset
 
   _initializeGestureState: ->
     @gestureState =
