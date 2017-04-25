@@ -31,7 +31,7 @@ Annotator.Plugin.Toolbar = require('./plugin/toolbar');
 
 // Document type plugins
 Annotator.Plugin.PDF = require('./plugin/pdf');
-require('./vendor/annotator.document');  // Does not export the plugin :(
+Annotator.Plugin.Document = require('./plugin/document');
 
 // Cross-frame communication
 Annotator.Plugin.CrossFrame = require('./plugin/cross-frame');
