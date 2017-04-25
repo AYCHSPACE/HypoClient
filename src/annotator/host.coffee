@@ -32,12 +32,14 @@ module.exports = class Host extends Annotator
 
     super
 
+    @guests = {}
+
     for own name, opts of @options
       if not @plugins[name] and Annotator.Plugin[name]
         @addPlugin(name, opts)
 
-    @guest = @addGuest(element, options)
-    @crossframe = @guest.getCrossframe()
+    @defaultGuest = @addGuest(element, options)
+    @crossframe = @defaultGuest.getCrossframe()
     @plugins.CrossFrame = @crossframe
 
     app.appendTo(@frame)
@@ -59,17 +61,45 @@ module.exports = class Host extends Annotator
       if !annotation.$highlight
         app[0].contentWindow.focus()
 
-  addGuest: (guestElement, guestOptions) ->
-    options = guestOptions
+  addGuest: (guestElement, guestOptions, guestId) ->
+    options = guestOptions || {}
+    options.guestId = guestId
+    if @crossframe then options.crossframe = @crossframe
+
+    # Give an id if no guestId is provided
+    # Note: Does not solve the scenario where two guests share the same document
+    if !guestId then guestId = guestElement.ownerDocument.location.href
+
+    # THESIS TODO: Consider decoupling the BucketBar from the Guest
+    options.plugins = {
+        BucketBar: @plugins.BucketBar,
+    }
+    # If this is the default guest, give it the host's document plugin
+    if !@defaultGuest
+      options.isDefault = true
+      options.plugins.Document = @plugins.Document
+    else
+      options.isDefault = false
+
     guest = new Guest(guestElement, options)
-    guest.setPlugins( @plugins )
     guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
     guest.listenTo('highlightsRemoved', @updateAnchors.bind(this))
 
+    @guests[guestId] = guest
     return guest
 
   createAnnotation: ->
-    @guest.createAnnotation()
+    foundSelected = false
+    # Iterate through the guests, and check if any of them have a selection
+    # If so, create an annotation with said guest
+    for guestId, guest of @guests
+      if guest.hasSelection()
+        guest.createAnnotation()
+        foundSelected = true
+        return
+
+    # If none of the guests have a selection, then we want to make a page note
+    if !foundSelected then @defaultGuest.createAnnotation()
 
   destroy: ->
     @frame.remove()
@@ -77,18 +107,32 @@ module.exports = class Host extends Annotator
     for name, plugin of @plugins
       @plugins[name].destroy()
 
+    @destroyAllGuests()
+
+  destroyAllGuests: ->
+    for guestId, guest of @guests
+      destroyGuest(guestId)
+
+  destroyGuest: (guestId) ->
+    @guests[guestId].destroy()
+    delete @guests[guestId]
+
   getAnchors: ->
-    anchors = @guest.getAnchors()
+    anchors = []
+    for guestId, guest of @guests
+      anchors = anchors.concat(guest.anchors)
 
     return anchors
 
   selectAnnotations: (annotations) ->
-    @guest.selectAnnotations(annotations)
+    # THESIS TODO: Make this work with multiple guests
+    @defaultGuest.selectAnnotations(annotations)
 
   setVisibleHighlights: (state) ->
     @visibleHighlights = state
 
-    @guest.setVisibleHighlights(state)
+    for guestId, guest of @guests
+      guest.setVisibleHighlights(state)
 
   updateAnchors: ->
     @anchors = @getAnchors()
