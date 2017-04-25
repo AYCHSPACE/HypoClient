@@ -453,6 +453,7 @@ module.exports = class Guest extends Annotator
     this.adderCtrl.setGuest({
       'onAnnotate': @_onAnnotate.bind(this),
       'onHighlight': @_onHighlight.bind(this),
+      'guestElement': @guestDocument.body,
     })
 
     {left, top, arrowDirection} = this.adderCtrl.target(focusRect, isBackwards)

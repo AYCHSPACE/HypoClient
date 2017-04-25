@@ -165,6 +165,7 @@ function Adder(container, options) {
   this.setGuest = function(options) {
     this.onAnnotate = options["onAnnotate"] || function() {};
     this.onHighlight = options["onHighlight"] || function() {};
+    this.guestElement = options.guestElement;
   };
 
   /**
@@ -186,16 +187,27 @@ function Adder(container, options) {
     } else {
       arrowDirection = ARROW_POINTING_UP;
     }
-    var top;
-    var left;
+    var top = 0;
+    var left = 0;
+
+    // Offsets the top and left, so that the adder position remains accurate within
+    // guest documents
+    if (this.guestElement) {
+        var guestFrame = this.guestElement.ownerDocument.defaultView.frameElement;
+        if(guestFrame){
+          var guestRect = guestFrame.getBoundingClientRect();
+          top = guestRect.top;
+          left = guestRect.left;
+        }
+    }
 
     // Position the adder such that the arrow it is above or below the selection
     // and close to the end.
     var hMargin = Math.min(ARROW_H_MARGIN, targetRect.width);
     if (isSelectionBackwards) {
-      left = targetRect.left - width() / 2 + hMargin;
+      left += targetRect.left - width() / 2 + hMargin;
     } else {
-      left = targetRect.left + targetRect.width - width() / 2 - hMargin;
+      left += targetRect.left + targetRect.width - width() / 2 - hMargin;
     }
 
     // Flip arrow direction if adder would appear above the top or below the
@@ -211,9 +223,9 @@ function Adder(container, options) {
     }
 
     if (arrowDirection === ARROW_POINTING_UP) {
-      top = targetRect.top + targetRect.height + ARROW_HEIGHT;
+      top += targetRect.top + targetRect.height + ARROW_HEIGHT;
     } else {
-      top = targetRect.top - height() - ARROW_HEIGHT;
+      top += targetRect.top - height() - ARROW_HEIGHT;
     }
 
     // Constrain the adder to the viewport.
