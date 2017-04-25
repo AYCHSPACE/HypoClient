@@ -23,6 +23,7 @@ var $ = require('jquery');
 var Guest = require('./guest');
 var Sidebar = require('./sidebar');
 var PdfSidebar = require('./pdf-sidebar');
+var ReadiumSidebar = require('./readium-sidebar');
 
 var pluginClasses = {
   // UI plugins
@@ -42,9 +43,13 @@ var appLinkEl =
 var config = configFrom(window);
 
 $.noConflict(true)(function() {
-  var Klass = window.PDFViewerApplication ?
-      PdfSidebar :
-      Sidebar;
+  var Klass = Sidebar;
+  if (window.PDFViewerApplication) {
+    Klass = PdfSidebar;
+  } else if (window.ReadiumSDK) {
+    Klass = ReadiumSidebar;
+  }
+
   if (config.hasOwnProperty('constructor')) {
     Klass = config.constructor;
     if (Klass === "Guest") Klass = Guest;

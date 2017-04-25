@@ -51,6 +51,11 @@ module.exports = class CrossFrame extends Plugin
       bridge.destroy()
       discovery.stopDiscovery()
 
+    this.discoverOwnFrames = () ->
+      # Discover existing iframes
+      iframes = frameUtil.findIFrames(elem)
+      _handleIFrames(iframes)
+
     this.sync = (annotations, cb) ->
       annotationSync.sync(annotations, cb)
 
@@ -62,11 +67,6 @@ module.exports = class CrossFrame extends Plugin
 
     this.onConnect = (fn) ->
       bridge.onConnect(fn)
-
-    _discoverOwnFrames = () ->
-      # Discover existing iframes
-      iframes = frameUtil.findIFrames(elem)
-      _handleIFrames(iframes)
 
     _checkForIFrames = (mutations) ->
       for own key, mutation of mutations
