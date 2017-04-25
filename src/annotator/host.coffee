@@ -40,6 +40,7 @@ module.exports = class Host extends Annotator
 
     @defaultGuest = @addGuest(element, options)
     @crossframe = @defaultGuest.getCrossframe()
+    @adderCtrl = @defaultGuest.getAdderCtrl()
     @plugins.CrossFrame = @crossframe
 
     app.appendTo(@frame)
@@ -64,6 +65,7 @@ module.exports = class Host extends Annotator
   addGuest: (guestElement, guestOptions, guestId) ->
     options = guestOptions || {}
     if @crossframe then options.crossframe = @crossframe
+    if @adderCtrl then options.adderCtrl = @adderCtrl
 
     # Give an id if no guestId is provided
     # Note: Does not solve the scenario where two guests share the same document

@@ -68,15 +68,6 @@ module.exports = class Guest extends Annotator
     this.guestId = options.guestId
     this.isDefault = if options.isDefault != undefined then options.isDefault else true
 
-    this.adderCtrl = new adder.Adder(@adder[0], {
-      onAnnotate: ->
-        self.createAnnotation()
-        self.guestDocument.getSelection().removeAllRanges()
-      onHighlight: ->
-        self.setVisibleHighlights(true)
-        self.createHighlight()
-        self.guestDocument.getSelection().removeAllRanges()
-    })
     this.selections = selections(@guestDocument).subscribe
       next: (range) ->
         if range
@@ -98,6 +89,10 @@ module.exports = class Guest extends Annotator
     else
       @setCrossframe(options.crossframe)
       @setVisibleHighlights(options.showHighlights)
+      @adderCtrl = options.adderCtrl
+
+  getAdderCtrl: ->
+    return @adderCtrl
 
   getAnchors: ->
     return @anchors
@@ -200,10 +195,20 @@ module.exports = class Guest extends Annotator
       this.setVisibleHighlights(state)
     , guestId
 
+  _onAnnotate: ->
+    @createAnnotation()
+    @guestDocument.getSelection().removeAllRanges()
+
+  _onHighlight: ->
+    @setVisibleHighlights(true)
+    @createHighlight()
+    @guestDocument.getSelection().removeAllRanges()
+
   _setupDefaultGuest: ->
     @setCrossframe()
 
     @crossframe.onConnect(=> @publish('panelReady'))
+    @adderCtrl = new adder.Adder(@adder[0])
 
   _setupWrapper: ->
     @wrapper = @element
@@ -444,6 +449,11 @@ module.exports = class Guest extends Annotator
       .attr('title', 'New Annotation')
       .removeClass('h-icon-note')
       .addClass('h-icon-annotate');
+
+    this.adderCtrl.setGuest({
+      'onAnnotate': @_onAnnotate.bind(this),
+      'onHighlight': @_onHighlight.bind(this),
+    })
 
     {left, top, arrowDirection} = this.adderCtrl.target(focusRect, isBackwards)
     this.adderCtrl.showAt(left, top, arrowDirection)

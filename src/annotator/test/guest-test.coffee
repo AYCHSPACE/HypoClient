@@ -26,6 +26,7 @@ class FakeAdder
     FakeAdder::instance = this
 
     this.hide = sinon.stub()
+    this.setGuest = sinon.stub()
     this.showAt = sinon.stub()
     this.target = sinon.stub()
 

@@ -102,6 +102,9 @@ function Adder(container, options) {
 
   var self = this;
   var element = createAdderDOM(container);
+  if (!options) options = {};
+  this.onAnnotate = options["onAnnotate"] || function() {};
+  this.onHighlight = options["onHighlight"] || function() {};
 
   Object.assign(container.style, {
     // Set initial style. The adder is hidden using the `visibility`
@@ -136,9 +139,9 @@ function Adder(container, options) {
     var isAnnotateCommand = this.classList.contains(ANNOTATE_BTN_CLASS);
 
     if (isAnnotateCommand) {
-      options.onAnnotate();
+      self.onAnnotate();
     } else {
-      options.onHighlight();
+      self.onHighlight();
     }
 
     self.hide();
@@ -157,6 +160,11 @@ function Adder(container, options) {
     clearTimeout(enterTimeout);
     element.className = classnames({'annotator-adder': true});
     container.style.visibility = 'hidden';
+  };
+
+  this.setGuest = function(options) {
+    this.onAnnotate = options["onAnnotate"] || function() {};
+    this.onHighlight = options["onHighlight"] || function() {};
   };
 
   /**
