@@ -228,6 +228,7 @@ module.exports = class Guest extends Annotator
     @element.data('annotator', null)
 
     this.removeEvents()
+    @crossframe.removeGuest(@guestId)
 
   anchor: (annotation) ->
     self = this

@@ -20,13 +20,24 @@ module.exports = class CrossFrame extends Annotator.Plugin
 
     bridge = new CrossFrame.Bridge()
 
-    opts = extract(options, 'on', 'emit')
+    opts = extract(options, 'on', 'emit', 'guestId')
     annotationSync = new CrossFrame.AnnotationSync(bridge, opts)
 
     this.pluginInit = ->
       onDiscoveryCallback = (source, origin, token) ->
         bridge.createChannel(source, origin, token)
       discovery.startDiscovery(onDiscoveryCallback)
+
+    this.addGuest = (cfOptions, guestId) ->
+      annotationSync.registerOnHandler(cfOptions.on, guestId)
+      annotationSync.registerEmitHandler(cfOptions.emit, guestId)
+      annotationSync.registerLocalListeners(guestId)
+      annotationSync.registerRemoteListeners(guestId)
+
+    this.removeGuest = (guestId) ->
+      annotationSync.removeOnHandler(guestId)
+      annotationSync.removeEmitHandler(guestId)
+      bridge.removeGuestListeners(guestId)
 
     this.destroy = ->
       # super doesnt work here :(
@@ -37,8 +48,8 @@ module.exports = class CrossFrame extends Annotator.Plugin
     this.sync = (annotations, cb) ->
       annotationSync.sync(annotations, cb)
 
-    this.on = (event, fn) ->
-      bridge.on(event, fn)
+    this.on = (event, fn, guestId) ->
+      bridge.on(event, fn, guestId)
 
     this.call = (message, args...) ->
       bridge.call(message, args...)

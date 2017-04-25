@@ -43,6 +43,7 @@ function FakeCrossFrame() {
   this.destroy = sinon.stub();
   this.onConnect = sinon.stub();
   this.on = sinon.stub();
+  this.removeGuest = sinon.stub();
   this.sync = sinon.stub();
 }
 

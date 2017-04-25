@@ -63,12 +63,12 @@ module.exports = class Host extends Annotator
 
   addGuest: (guestElement, guestOptions, guestId) ->
     options = guestOptions || {}
-    options.guestId = guestId
     if @crossframe then options.crossframe = @crossframe
 
     # Give an id if no guestId is provided
     # Note: Does not solve the scenario where two guests share the same document
     if !guestId then guestId = guestElement.ownerDocument.location.href
+    options.guestId = guestId
 
     # THESIS TODO: Consider decoupling the BucketBar from the Guest
     options.plugins = {

@@ -20,29 +20,64 @@ function AnnotationSync(bridge, options) {
 
   this.cache = {};
 
-  this._on = options.on;
-  this._emit = options.emit;
+  // Contains a hash of _on's and _emit's, respective to their guestId's.
+  this._on = {};
+  this._emit = {};
+
+  this.defaultId = options.guestId;
+  this._on[this.defaultId] = options.on;
+  this._emit[this.defaultId] = options.emit;
 
   // Listen locally for interesting events
-  Object.keys(this._eventListeners).forEach(function(eventName) {
-    var listener = self._eventListeners[eventName];
-    self._on(eventName, function(annotation) {
-      listener.apply(self, [annotation]);
-    });
-  });
+  this.registerLocalListeners(this.defaultId);
 
   // Register remotely invokable methods
-  Object.keys(this._channelListeners).forEach(function(eventName) {
-    self.bridge.on(eventName, function(data, callbackFunction) {
-      var listener = self._channelListeners[eventName];
-      listener.apply(self, [data, callbackFunction]);
-    });
-  });
+  this.registerRemoteListeners(this.defaultId);
 }
 
 // Cache of annotations which have crossed the bridge for fast, encapsulated
 // association of annotations received in arguments to window-local copies.
 AnnotationSync.prototype.cache = null;
+
+AnnotationSync.prototype.registerEmitHandler = function(emit, guestId) {
+  this._emit[guestId] = emit;
+}
+
+AnnotationSync.prototype.registerLocalListeners = function(guestId) {
+  var self = this;
+
+  Object.keys(this._eventListeners).forEach(function(eventName) {
+    var listener = self._eventListeners[eventName];
+    self._on[guestId](eventName, function(annotation) {
+      listener.apply(self, [annotation]);
+    });
+  });
+}
+
+AnnotationSync.prototype.registerOnHandler = function(on, guestId) {
+  var self = this;
+  this._on[guestId] = on;
+}
+
+// THESIS TODO: Remote events are registered, but never removed. Investigate this.
+AnnotationSync.prototype.registerRemoteListeners = function(guestId) {
+  var self = this;
+
+  Object.keys(this._channelListeners).forEach(function(eventName) {
+    self.bridge.on(eventName, function(data, callbackFunction) {
+      var listener = self._channelListeners[eventName];
+      listener.apply(self, [data, callbackFunction]);
+    }, guestId);
+  });
+}
+
+AnnotationSync.prototype.removeEmitHandler = function(guestId) {
+  delete this._emit[guestId];
+}
+
+AnnotationSync.prototype.removeOnHandler = function(guestId) {
+  delete this._on[guestId];
+}
 
 AnnotationSync.prototype.sync = function(annotations) {
   annotations = (function() {
@@ -74,7 +109,10 @@ AnnotationSync.prototype._channelListeners = {
   'deleteAnnotation': function(body, cb) {
     var annotation = this._parse(body);
     delete this.cache[annotation.$tag];
-    this._emit('annotationDeleted', annotation);
+
+    // THESIS TODO: Pass in a guestId at some point
+    var guestId = this.defaultId;
+    this._emit[guestId]('annotationDeleted', annotation);
     cb(null, this._format(annotation));
   },
   'loadAnnotations': function(bodies, cb) {
@@ -87,7 +125,10 @@ AnnotationSync.prototype._channelListeners = {
       }
       return parsedAnnotations;
     }).call(this);
-    this._emit('annotationsLoaded', annotations);
+
+    // THESIS TODO: Pass in a guestId at some point
+    var guestId = this.defaultId;
+    this._emit[guestId]('annotationsLoaded', annotations);
     return cb(null, annotations);
   },
 };

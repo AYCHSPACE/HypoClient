@@ -90,14 +90,34 @@ module.exports = class Bridge
 
     return resultPromise
 
-  on: (method, callback) ->
-    if @channelListeners[method]
-      throw new Error("Listener '#{method}' already bound in Bridge")
-    @channelListeners[method] = callback
+  on: (method, callback, guestId) ->
+    listeners = @channelListeners
+    if guestId
+      # Create a guests object if there isn't one already
+      @channelListeners.guests = {} unless listeners.guests
+      # Create the guest's entry if it isn't already created
+      @channelListeners.guests[guestId] = {} unless @channelListeners.guests[guestId]
+      # Set the listeners object to the specified guest
+      listeners = @channelListeners.guests[guestId]
+
+    if listeners[method]
+      # If the guestId is set, then specify which guest the listener is already bound to
+      withinGuest = if guestId then " within guest '#{guestId}'" else ""
+      errorMessage = "Listener '#{method}'#{withinGuest} already bound in Bridge"
+      throw new Error(errorMessage)
+
+    listeners[method] = callback
     return this
 
-  off: (method) ->
-    delete @channelListeners[method]
+  off: (method, guestId) ->
+    listeners = @channelListeners
+    if guestId then listeners = @channelListeners.guests[guestId]
+
+    delete listeners[method]
+    return this
+
+  removeGuestListeners: (guestId) ->
+    delete @channelListeners.guests[guestId]
     return this
 
   # Add a function to be called upon a new connection
