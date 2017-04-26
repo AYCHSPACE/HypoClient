@@ -69,7 +69,12 @@ module.exports = class Host extends Annotator
 
     # Give an id if no guestId is provided
     # Note: Does not solve the scenario where two guests share the same document
-    if !guestId then guestId = guestElement.ownerDocument.location.href
+    if !guestId
+      guestId = guestElement.ownerDocument.location.href
+    else
+    # THESIS TODO: Think of a better name
+      # If a guestId is passed in, then the guest must know it's a custom ID
+      options.hasCustomId = true
     options.guestId = guestId
 
     # THESIS TODO: Consider decoupling the BucketBar from the Guest
