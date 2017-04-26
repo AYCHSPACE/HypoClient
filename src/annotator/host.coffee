@@ -66,6 +66,7 @@ module.exports = class Host extends Annotator
     options = guestOptions || {}
     if @crossframe then options.crossframe = @crossframe
     if @adderCtrl then options.adderCtrl = @adderCtrl
+    if !options.showHighlights then options.showHighlights = @visibleHighlights
 
     # Give an id if no guestId is provided
     # Note: Does not solve the scenario where two guests share the same document
