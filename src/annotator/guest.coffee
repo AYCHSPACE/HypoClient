@@ -135,6 +135,7 @@ module.exports = class Guest extends Annotator
 
     if (crossframe)
       @crossframe = crossframe
+      @crossframe.loadGuestAnnotations(@guestId)
       @crossframe.addGuest(cfOptions, @guestId)
     else
       cfOptions.guestId = @guestId

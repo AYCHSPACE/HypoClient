@@ -199,6 +199,34 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     discovery.startDiscovery(bridge.createChannel.bind(bridge));
     bridge.onConnect(addFrame);
 
+    // THESIS TODO: Currently used just to pass the annotations into new guests.
+    // This will need to be looked at
+    bridge.on('loadGuestAnnotations', function(guestId) {
+      prevAnnotations = [];
+      prevFrames = [];
+      prevPublicAnns = 0;
+
+      var state = annotationUI.getState();
+      var annots = [];
+      state.annotations.forEach(function (annot) {
+        if (metadata.isReply(annot)) {
+          // The frame does not need to know about replies
+          return;
+        }
+
+        var annGuestId = annot.uri;
+
+        // We only want annotations that belong to the new guest
+        if (guestId === annGuestId) {
+          annots.push(annot);
+        }
+      });
+
+      if (annots.length > 0) {
+        bridge.call('loadAnnotations', annots.map(formatAnnot));
+      }
+    });
+
     setupSyncToFrame();
     setupSyncFromFrame();
   };
