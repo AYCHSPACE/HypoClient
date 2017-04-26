@@ -110,8 +110,7 @@ AnnotationSync.prototype._channelListeners = {
     var annotation = this._parse(body);
     delete this.cache[annotation.$tag];
 
-    // THESIS TODO: Pass in a guestId at some point
-    var guestId = this.defaultId;
+    var guestId = annotation.uri;
     this._emit[guestId]('annotationDeleted', annotation);
     cb(null, this._format(annotation));
   },
@@ -126,9 +125,9 @@ AnnotationSync.prototype._channelListeners = {
       return parsedAnnotations;
     }).call(this);
 
-    // THESIS TODO: Pass in a guestId at some point
-    var guestId = this.defaultId;
-    this._emit[guestId]('annotationsLoaded', annotations);
+    // All annotations pass in should belong to the same guest
+    var guestId = annotations[0].uri;
+    if (this._emit[guestId]) this._emit[guestId]('annotationsLoaded', annotations);
     return cb(null, annotations);
   },
 };

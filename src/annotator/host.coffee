@@ -127,8 +127,8 @@ module.exports = class Host extends Annotator
     return anchors
 
   selectAnnotations: (annotations) ->
-    # THESIS TODO: Make this work with multiple guests
-    @defaultGuest.selectAnnotations(annotations)
+    guestId = annotations[0].uri
+    @guests[guestId].selectAnnotations(annotations)
 
   setVisibleHighlights: (state) ->
     @visibleHighlights = state
