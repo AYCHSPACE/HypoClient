@@ -4,10 +4,20 @@ var fs = require('fs');
 var gulpUtil = require('gulp-util');
 var http = require('http');
 var WebSocketServer = require('websocket').server;
+var urlParser = require('url');
 
-function changelogText() {
+function readmeText() {
   return fs.readFileSync('./README.md', 'utf-8');
 }
+
+function licenseText() {
+  return fs.readFileSync('./LICENSE', 'utf-8');
+}
+
+function changelogText() {
+  return fs.readFileSync('./CHANGELOG.md', 'utf-8');
+}
+
 
 /**
  * @typedef Config
@@ -33,43 +43,74 @@ function LiveReloadServer(port, config) {
   function listen() {
     var log = gulpUtil.log;
     var server = http.createServer(function (req, response) {
-      var content = `
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>Hypothesis Client Test</title>
-    </head>
-    <body>
-      <div data-hypothesis-trigger style="margin: 75px 0 0 75px;">
-        Number of annotations:
-        <span data-hypothesis-annotation-count>...</span>
-      </div>
-      <pre style="margin: 20px 75px 75px 75px;">${changelogText()}</pre>
-      <script>
-      var appHost = document.location.hostname;
+      var url = urlParser.parse(req.url);
+      var content;
 
-      window.hypothesisConfig = function () {
-        return {
-          liveReloadServer: 'ws://' + appHost + ':${port}',
-
-          // Open the sidebar when the page loads
-          openSidebar: true,
-        };
-      };
-
-      window.addEventListener('message', function (event) {
-        if (event.data.type && event.data.type === 'reloadrequest') {
-          window.location.reload();
-        }
-      });
-
-      var embedScript = document.createElement('script');
-      embedScript.src = '${config.clientUrl}';
-      document.body.appendChild(embedScript);
-      </script>
-    </body>
-    </html>
-      `;
+      if (url.pathname === '/document/license') {
+        content = `
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Hypothesis in-line frame document - License</title>
+          </head>
+          <body>
+            <pre style="margin: 20px;">${licenseText()}</pre>
+          </body>
+          </html>
+        `;
+      } else if (url.pathname === '/document/changelog') {
+        content = `
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Hypothesis in-line frame document - Changelog</title>
+          </head>
+          <body>
+            <pre style="margin: 20px;">${changelogText()}</pre>
+          </body>
+          </html>
+        `;
+      } else {
+        content = `
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Hypothesis Client Test</title>
+          </head>
+          <body>
+            <div data-hypothesis-trigger style="margin: 75px 0 0 75px;">
+              Number of annotations:
+              <span data-hypothesis-annotation-count>...</span>
+            </div>
+            <iframe src="/document/license" style="margin: 20px 0 20px 0;width: 40%;height: 300px;"></iframe>
+            <iframe src="/document/changelog" style="margin: 20px 0 20px 0;width: 40%;height: 300px;"></iframe>
+            <pre style="margin: 20px 75px 75px 75px;">${readmeText()}</pre>
+            <script>
+            var appHost = document.location.hostname;
+      
+            window.hypothesisConfig = function () {
+              return {
+                liveReloadServer: 'ws://' + appHost + ':${port}',
+      
+                // Open the sidebar when the page loads
+                openSidebar: true,
+              };
+            };
+      
+            window.addEventListener('message', function (event) {
+              if (event.data.type && event.data.type === 'reloadrequest') {
+                window.location.reload();
+              }
+            });
+      
+            var embedScript = document.createElement('script');
+            embedScript.src = '${config.clientUrl}';
+            document.body.appendChild(embedScript);
+            </script>
+          </body>
+          </html>
+        `;
+      }
       response.end(content);
     });
 

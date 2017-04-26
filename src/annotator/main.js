@@ -22,6 +22,7 @@ if (g.wgxpath) {
 Annotator.Guest = require('./guest');
 Annotator.Host = require('./host');
 Annotator.Sidebar = require('./sidebar');
+Annotator.IframeSidebar = require('./iframe-sidebar');
 Annotator.PdfSidebar = require('./pdf-sidebar');
 Annotator.ReadiumSidebar = require('./readium-sidebar');
 
@@ -44,7 +45,8 @@ var appLinkEl =
 var options = require('./config')(window);
 
 Annotator.noConflict().$.noConflict(true)(function() {
-  var Klass = Annotator.Sidebar;
+  // var Klass = Annotator.Sidebar;
+  var Klass = Annotator.IframeSidebar;
   if (window.PDFViewerApplication) {
     Klass = Annotator.PdfSidebar;
   } else if (window.ReadiumSDK) {
