@@ -101,7 +101,7 @@ RPC.prototype._handle = function (msg) {
             if (!this._methods.guests) return;
 
             // THESIS TODO: Pass in a guestId at some point
-            var guestId = document.location.href;
+            var guestId = msg.arguments[1] || document.location.href;
             var guestMethods = this._methods.guests[guestId];
 
             // If no guest method is found, then return without doing anything
@@ -119,6 +119,18 @@ RPC.prototype._handle = function (msg) {
             }, self.origin);
         });
         methods[msg.method].apply(methods, args);
+
+        // TODO: Bandaid fix for unfocusing all guests
+        // Find a real solution
+        if (msg.method === 'focusAnnotations' && !msg.arguments[0].length) {
+            var mg = this._methods.guests;
+            for(var key in mg) {
+                if (mg.hasOwnProperty(key)) {
+                    var g = mg[key];
+                    if(g[msg.method]) g[msg.method].apply(methods, args);
+                }
+            }
+        }
     }
     else if (msg.hasOwnProperty('response')) {
         var cb = this._callbacks[msg.response];

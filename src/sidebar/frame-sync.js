@@ -239,8 +239,8 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
    *
    * @param {string[]} tags
    */
-  this.focusAnnotations = function (tags) {
-    bridge.call('focusAnnotations', tags);
+  this.focusAnnotations = function (tags, guestId) {
+    bridge.call('focusAnnotations', tags, guestId);
   };
 
   /**

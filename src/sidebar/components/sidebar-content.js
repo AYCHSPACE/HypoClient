@@ -63,10 +63,12 @@ function SidebarContentController(
 
   function focusAnnotation(annotation) {
     var highlights = [];
+    var uri;
     if (annotation) {
       highlights = [annotation.$tag];
+      uri = annotation.uri;
     }
-    frameSync.focusAnnotations(highlights);
+    frameSync.focusAnnotations(highlights, uri);
   }
 
   function scrollToAnnotation(annotation) {
