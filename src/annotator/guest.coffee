@@ -53,6 +53,7 @@ module.exports = class Guest extends Annotator
   guestDocument: null
   guestUri: null
   isDefault: true
+  hasCustomUri: false
 
   html: extend {}, Annotator::html,
     adder: '<hypothesis-adder></hypothesis-adder>';
@@ -67,6 +68,7 @@ module.exports = class Guest extends Annotator
     this.guestDocument = element.ownerDocument
     this.guestUri = options.guestUri
     this.isDefault = if options.isDefault != undefined then options.isDefault else true
+    this.hasCustomUri = options.hasCustomUri || false
 
     this.selections = selections(@guestDocument).subscribe
       next: (range) ->
@@ -362,7 +364,8 @@ module.exports = class Guest extends Annotator
 
     setDocumentInfo = (info) ->
       annotation.document = info.metadata
-      annotation.uri = info.uri
+      # If this guest has a custom guestUri, then use that as the uri value
+      annotation.uri = if (self.hasCustomUri) then self.guestUri else info.uri
 
     setTargets = ([info, selectors]) ->
       # `selectors` is an array of arrays: each item is an array of selectors

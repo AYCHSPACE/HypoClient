@@ -73,7 +73,11 @@ module.exports = class Host extends Annotator
 
     # Give an id if no guestUri is provided
     # Note: Does not solve the scenario where two guests share the same document
-    if !guestId then guestId = guestElement.ownerDocument.location.href
+    if !guestUri
+      guestUri = guestElement.ownerDocument.location.href
+    else
+      options.hasCustomUri = true
+
     options.guestUri = guestUri
 
     # THESIS TODO: Consider decoupling the BucketBar from the Guest
