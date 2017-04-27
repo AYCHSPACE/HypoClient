@@ -129,6 +129,21 @@ module.exports = class Guest extends Annotator
   scrollIntoView: (highlight)->
     scrollIntoView(highlight)
 
+    # THESIS TODO: Temporary solution
+    # If this not the default guest, then scroll this one into view as well.
+    # No transition, go directly to the location
+    if (!this.isDefault)
+      defaultView = this.guestDocument.defaultView
+      offset = highlight.getBoundingClientRect()
+      height = this.guestDocument.body.clientHeight
+      width = this.guestDocument.body.clientWidth
+      scrollTop = this.guestDocument.body.scrollTop
+      scrollLeft = this.guestDocument.body.scrollLeft
+
+      top = scrollTop + offset.top - height / 2
+      left = scrollLeft + offset.left - width / 2
+      defaultView.scrollTo(left, top)
+
   setCrossframe: (crossframe) ->
     cfOptions =
       on: (event, handler) =>
