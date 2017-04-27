@@ -192,7 +192,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
 
     // THESIS TODO: Currently used just to pass the annotations into new guests.
     // This will need to be looked at
-    bridge.on('loadGuestAnnotations', function(guestId) {
+    bridge.on('loadGuestAnnotations', function(guestUri) {
       prevAnnotations = [];
       prevFrames = [];
       prevPublicAnns = 0;
@@ -205,10 +205,10 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
           return;
         }
 
-        var annGuestId = annot.uri;
+        var annGuestUri = annot.uri;
 
         // We only want annotations that belong to the new guest
-        if (guestId === annGuestId) {
+        if (guestUri === annGuestUri) {
           annots.push(annot);
         }
       });

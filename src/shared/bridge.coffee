@@ -13,6 +13,7 @@ module.exports = class Bridge
     @links = []
     @channelListeners = {}
     @onConnectListeners = []
+    window.bridge = this
 
   # Tear down the bridge. We destroy each RPC "channel" object we know about.
   # This removes the `onmessage` event listeners, thus removing references to
@@ -90,34 +91,34 @@ module.exports = class Bridge
 
     return resultPromise
 
-  on: (method, callback, guestId) ->
+  on: (method, callback, guestUri) ->
     listeners = @channelListeners
-    if guestId
+    if guestUri
       # Create a guests object if there isn't one already
       @channelListeners.guests = {} unless listeners.guests
       # Create the guest's entry if it isn't already created
-      @channelListeners.guests[guestId] = {} unless @channelListeners.guests[guestId]
+      @channelListeners.guests[guestUri] = {} unless @channelListeners.guests[guestUri]
       # Set the listeners object to the specified guest
-      listeners = @channelListeners.guests[guestId]
+      listeners = @channelListeners.guests[guestUri]
 
     if listeners[method]
-      # If the guestId is set, then specify which guest the listener is already bound to
-      withinGuest = if guestId then " within guest '#{guestId}'" else ""
+      # If the guestUri is set, then specify which guest the listener is already bound to
+      withinGuest = if guestUri then " within guest '#{guestUri}'" else ""
       errorMessage = "Listener '#{method}'#{withinGuest} already bound in Bridge"
       throw new Error(errorMessage)
 
     listeners[method] = callback
     return this
 
-  off: (method, guestId) ->
+  off: (method, guestUri) ->
     listeners = @channelListeners
-    if guestId then listeners = @channelListeners.guests[guestId]
+    if guestUri then listeners = @channelListeners.guests[guestUri]
 
     delete listeners[method]
     return this
 
-  removeGuestListeners: (guestId) ->
-    delete @channelListeners.guests[guestId]
+  removeGuestListeners: (guestUri) ->
+    delete @channelListeners.guests[guestUri]
     return this
 
   # Add a function to be called upon a new connection

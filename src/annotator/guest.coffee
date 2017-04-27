@@ -51,7 +51,7 @@ module.exports = class Guest extends Annotator
   anchors: null
   visibleHighlights: false
   guestDocument: null
-  guestId: null
+  guestUri: null
   isDefault: true
 
   html: extend {}, Annotator::html,
@@ -65,7 +65,7 @@ module.exports = class Guest extends Annotator
 
     self = this
     this.guestDocument = element.ownerDocument
-    this.guestId = options.guestId
+    this.guestUri = options.guestUri
     this.isDefault = if options.isDefault != undefined then options.isDefault else true
 
     this.selections = selections(@guestDocument).subscribe
@@ -136,14 +136,14 @@ module.exports = class Guest extends Annotator
 
     if (crossframe)
       @crossframe = crossframe
-      @crossframe.loadGuestAnnotations(@guestId)
-      @crossframe.addGuest(cfOptions, @guestId)
+      @crossframe.loadGuestAnnotations(@guestUri)
+      @crossframe.addGuest(cfOptions, @guestUri)
     else
-      cfOptions.guestId = @guestId
+      cfOptions.guestUri = @guestUri
       @addPlugin('CrossFrame', cfOptions)
       @crossframe = @plugins.CrossFrame
 
-    this._connectAnnotationUISync(@crossframe, @guestId)
+    this._connectAnnotationUISync(@crossframe, @guestUri)
 
   setPlugins: (plugins) ->
     # Set any plugins that are passed in
@@ -166,18 +166,18 @@ module.exports = class Guest extends Annotator
 
     @_eventListeners[eventName].push(method)
 
-  _connectAnnotationUISync: (crossframe, guestId) ->
+  _connectAnnotationUISync: (crossframe, guestUri) ->
     self = this
 
     crossframe.on 'getDocumentInfo', (cb) =>
       this.getDocumentInfo()
       .then((info) -> cb(null, info))
       .catch((reason) -> cb(reason))
-    , guestId
+    , guestUri
 
     crossframe.on 'setVisibleHighlights', (state) =>
       this.setVisibleHighlights(state)
-    , guestId
+    , guestUri
 
   _onAnnotate: ->
     @createAnnotation()
@@ -217,7 +217,7 @@ module.exports = class Guest extends Annotator
     @element.data('annotator', null)
 
     this.removeEvents()
-    @crossframe.removeGuest(@guestId)
+    @crossframe.removeGuest(@guestUri)
 
   anchor: (annotation) ->
     self = this

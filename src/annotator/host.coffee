@@ -65,16 +65,16 @@ module.exports = class Host extends Annotator
       if !annotation.$highlight
         app[0].contentWindow.focus()
 
-  addGuest: (guestElement, guestOptions, guestId) ->
+  addGuest: (guestElement, guestOptions, guestUri) ->
     options = guestOptions || {}
     if @crossframe then options.crossframe = @crossframe
     if @adderCtrl then options.adderCtrl = @adderCtrl
     if options.showHighlights == undefined then options.showHighlights = @visibleHighlights
 
-    # Give an id if no guestId is provided
+    # Give an id if no guestUri is provided
     # Note: Does not solve the scenario where two guests share the same document
     if !guestId then guestId = guestElement.ownerDocument.location.href
-    options.guestId = guestId
+    options.guestUri = guestUri
 
     # THESIS TODO: Consider decoupling the BucketBar from the Guest
     options.plugins = {
@@ -91,14 +91,14 @@ module.exports = class Host extends Annotator
     guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
     guest.listenTo('highlightsRemoved', @updateAnchors.bind(this))
 
-    @guests[guestId] = guest
+    @guests[guestUri] = guest
     return guest
 
   createAnnotation: ->
     foundSelected = false
     # Iterate through the guests, and check if any of them have a selection
     # If so, create an annotation with said guest
-    for guestId, guest of @guests
+    for guestUri, guest of @guests
       if guest.hasSelection()
         guest.createAnnotation()
         foundSelected = true
@@ -116,29 +116,29 @@ module.exports = class Host extends Annotator
     @destroyAllGuests()
 
   destroyAllGuests: ->
-    for guestId, guest of @guests
-      destroyGuest(guestId)
+    for guestUri, guest of @guests
+      destroyGuest(guestUri)
 
-  destroyGuest: (guestId) ->
-    @guests[guestId].destroy()
-    delete @guests[guestId]
+  destroyGuest: (guestUri) ->
+    @guests[guestUri].destroy()
+    delete @guests[guestUri]
 
   getAnchors: ->
     anchors = []
-    for guestId, guest of @guests
+    for guestUri, guest of @guests
       anchors = anchors.concat(guest.anchors)
 
     return anchors
 
   selectAnnotations: (annotations) ->
-    guestId = annotations[0].uri
-    @guests[guestId].selectAnnotations(annotations)
+    guestUri = annotations[0].uri
+    @guests[guestUri].selectAnnotations(annotations)
 
   # Sets visibleHighlights for ALL guests
   setVisibleHighlights: (state) ->
     @visibleHighlights = state
 
-    for guestId, guest of @guests
+    for guestUri, guest of @guests
       guest.setVisibleHighlights(state)
 
   updateAnchors: ->
@@ -148,13 +148,13 @@ module.exports = class Host extends Annotator
 
   _connectAnnotationSync: (crossframe) ->
     this.subscribe 'annotationDeleted', (annotation) =>
-      guestId = annotation.uri
-      @guests[guestId].detach(annotation)
+      guestUri = annotation.uri
+      @guests[guestUri].detach(annotation)
 
     this.subscribe 'annotationsLoaded', (annotations) =>
       for annotation in annotations
-        guestId = annotation.uri
-        @guests[guestId].anchor(annotation)
+        guestUri = annotation.uri
+        @guests[guestUri].anchor(annotation)
 
   _connectAnnotationUISync: (crossframe) ->
     self = this
@@ -167,6 +167,6 @@ module.exports = class Host extends Annotator
     crossframe.on 'scrollToAnnotation', (tag) =>
       for anchor in @anchors when anchor.highlights?
         if anchor.annotation.$tag is tag
-          guestId = anchor.annotation.uri
-          self.guests[guestId].scrollIntoView(anchor.highlights[0])
+          guestUri = anchor.annotation.uri
+          self.guests[guestUri].scrollIntoView(anchor.highlights[0])
 

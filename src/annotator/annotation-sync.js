@@ -20,16 +20,16 @@ function AnnotationSync(bridge, options) {
 
   this.cache = {};
 
-  // Contains a hash of _on's and _emit's, respective to their guestId's.
+  // Contains a hash of _on's and _emit's, respective to their guestUri's.
   this._on = {};
   this._emit = {};
 
-  this.defaultId = options.guestId;
-  this._on[this.defaultId] = options.on;
-  this._emit[this.defaultId] = options.emit;
+  this.defaultUri = options.guestUri;
+  this._on[this.defaultUri] = options.on;
+  this._emit[this.defaultUri] = options.emit;
 
   // Listen locally for interesting events
-  this.registerLocalListeners(this.defaultId);
+  this.registerLocalListeners(this.defaultUri);
 
   // Register remotely invokable methods
   this.registerRemoteListeners();
@@ -39,24 +39,24 @@ function AnnotationSync(bridge, options) {
 // association of annotations received in arguments to window-local copies.
 AnnotationSync.prototype.cache = null;
 
-AnnotationSync.prototype.registerEmitHandler = function(emit, guestId) {
-  this._emit[guestId] = emit;
+AnnotationSync.prototype.registerEmitHandler = function(emit, guestUri) {
+  this._emit[guestUri] = emit;
 }
 
-AnnotationSync.prototype.registerLocalListeners = function(guestId) {
+AnnotationSync.prototype.registerLocalListeners = function(guestUri) {
   var self = this;
 
   Object.keys(this._eventListeners).forEach(function(eventName) {
     var listener = self._eventListeners[eventName];
-    self._on[guestId](eventName, function(annotation) {
+    self._on[guestUri](eventName, function(annotation) {
       listener.apply(self, [annotation]);
     });
   });
 }
 
-AnnotationSync.prototype.registerOnHandler = function(on, guestId) {
+AnnotationSync.prototype.registerOnHandler = function(on, guestUri) {
   var self = this;
-  this._on[guestId] = on;
+  this._on[guestUri] = on;
 }
 
 // THESIS TODO: Remote events are registered, but never removed. Investigate this.
@@ -71,12 +71,12 @@ AnnotationSync.prototype.registerRemoteListeners = function() {
   });
 }
 
-AnnotationSync.prototype.removeEmitHandler = function(guestId) {
-  delete this._emit[guestId];
+AnnotationSync.prototype.removeEmitHandler = function(guestUri) {
+  delete this._emit[guestUri];
 }
 
-AnnotationSync.prototype.removeOnHandler = function(guestId) {
-  delete this._on[guestId];
+AnnotationSync.prototype.removeOnHandler = function(guestUri) {
+  delete this._on[guestUri];
 }
 
 AnnotationSync.prototype.sync = function(annotations) {
@@ -110,8 +110,8 @@ AnnotationSync.prototype._channelListeners = {
     var annotation = this._parse(body);
     delete this.cache[annotation.$tag];
 
-    var guestId = annotation.uri;
-    this._emit[guestId]('annotationDeleted', annotation);
+    var guestUri = annotation.uri;
+    this._emit[guestUri]('annotationDeleted', annotation);
     cb(null, this._format(annotation));
   },
   'loadAnnotations': function(bodies, cb) {
@@ -126,8 +126,8 @@ AnnotationSync.prototype._channelListeners = {
     }).call(this);
 
     // All annotations pass in should belong to the same guest
-    var guestId = annotations[0].uri;
-    if (this._emit[guestId]) this._emit[guestId]('annotationsLoaded', annotations);
+    var guestUri = annotations[0].uri;
+    if (this._emit[guestUri]) this._emit[guestUri]('annotationsLoaded', annotations);
     return cb(null, annotations);
   },
 };

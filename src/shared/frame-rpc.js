@@ -100,9 +100,9 @@ RPC.prototype._handle = function (msg) {
         if (!this._methods.hasOwnProperty(msg.method)) {
             if (!this._methods.guests) return;
 
-            // THESIS TODO: Pass in a guestId at some point
-            var guestId = document.location.href;
-            var guestMethods = this._methods.guests[guestId];
+            // THESIS TODO: Pass in a guestUri at some point
+            var guestUri = document.location.href;
+            var guestMethods = this._methods.guests[guestUri];
 
             // If no guest method is found, then return without doing anything
             // Otherwise, use the selected guest methods and proceed
