@@ -33,6 +33,7 @@ module.exports = class Host extends Annotator
     super
 
     @guests = {}
+    @anchors = {}
 
     for own name, opts of @options
       if not @plugins[name] and Annotator.Plugin[name]
@@ -158,7 +159,7 @@ module.exports = class Host extends Annotator
     this.subscribe 'annotationsLoaded', (annotations) =>
       for annotation in annotations
         guestUri = annotation.uri
-        @guests[guestUri].anchor(annotation)
+        if (@guests[guestUri]) then @guests[guestUri].anchor(annotation)
 
   _connectAnnotationUISync: (crossframe) ->
     self = this

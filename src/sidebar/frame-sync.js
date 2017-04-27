@@ -193,12 +193,9 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     // THESIS TODO: Currently used just to pass the annotations into new guests.
     // This will need to be looked at
     bridge.on('loadGuestAnnotations', function(guestUri) {
-      prevAnnotations = [];
-      prevFrames = [];
-      prevPublicAnns = 0;
-
       var state = annotationUI.getState();
       var annots = [];
+
       state.annotations.forEach(function (annot) {
         if (metadata.isReply(annot)) {
           // The frame does not need to know about replies

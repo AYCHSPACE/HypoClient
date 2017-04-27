@@ -110,8 +110,7 @@ AnnotationSync.prototype._channelListeners = {
     var annotation = this._parse(body);
     delete this.cache[annotation.$tag];
 
-    var guestUri = annotation.uri;
-    this._emit[guestUri]('annotationDeleted', annotation);
+    this._emit[this.defaultUri]('annotationDeleted', annotation);
     cb(null, this._format(annotation));
   },
   'loadAnnotations': function(bodies, cb) {
@@ -125,9 +124,7 @@ AnnotationSync.prototype._channelListeners = {
       return parsedAnnotations;
     }).call(this);
 
-    // All annotations pass in should belong to the same guest
-    var guestUri = annotations[0].uri;
-    if (this._emit[guestUri]) this._emit[guestUri]('annotationsLoaded', annotations);
+    this._emit[this.defaultUri]('annotationsLoaded', annotations);
     return cb(null, annotations);
   },
 };
