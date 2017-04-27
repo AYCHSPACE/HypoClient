@@ -45,6 +45,9 @@ module.exports = class CrossFrame extends Annotator.Plugin
       bridge.destroy()
       discovery.stopDiscovery()
 
+    this.loadGuestAnnotations = (guestId) ->
+      bridge.call('loadGuestAnnotations', guestId)
+
     this.sync = (annotations, cb) ->
       annotationSync.sync(annotations, cb)
 
