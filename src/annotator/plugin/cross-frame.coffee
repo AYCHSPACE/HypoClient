@@ -32,7 +32,6 @@ module.exports = class CrossFrame extends Annotator.Plugin
       annotationSync.registerOnHandler(cfOptions.on, guestId)
       annotationSync.registerEmitHandler(cfOptions.emit, guestId)
       annotationSync.registerLocalListeners(guestId)
-      annotationSync.registerRemoteListeners(guestId)
 
     this.removeGuest = (guestId) ->
       annotationSync.removeOnHandler(guestId)

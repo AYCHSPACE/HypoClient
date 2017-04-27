@@ -124,6 +124,9 @@ module.exports = class Guest extends Annotator
   hasSelection: ->
     return if @selectedRanges then @selectedRanges[0] != undefined else false
 
+  scrollIntoView: (highlight)->
+    scrollIntoView(highlight)
+
   setCrossframe: (crossframe) ->
     cfOptions =
       on: (event, handler) =>
@@ -140,7 +143,6 @@ module.exports = class Guest extends Annotator
       @addPlugin('CrossFrame', cfOptions)
       @crossframe = @plugins.CrossFrame
 
-    this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe, @guestId)
 
   setPlugins: (plugins) ->
@@ -164,27 +166,8 @@ module.exports = class Guest extends Annotator
 
     @_eventListeners[eventName].push(method)
 
-  _connectAnnotationSync: (crossframe) ->
-    this.subscribe 'annotationDeleted', (annotation) =>
-      this.detach(annotation)
-
-    this.subscribe 'annotationsLoaded', (annotations) =>
-      for annotation in annotations
-        this.anchor(annotation)
-
   _connectAnnotationUISync: (crossframe, guestId) ->
     self = this
-    crossframe.on 'focusAnnotations', (tags=[]) =>
-      for anchor in @anchors when anchor.highlights?
-        toggle = anchor.annotation.$tag in tags
-        $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
-    , guestId
-
-    crossframe.on 'scrollToAnnotation', (tag) =>
-      for anchor in @anchors when anchor.highlights?
-        if anchor.annotation.$tag is tag
-          scrollIntoView(anchor.highlights[0])
-    , guestId
 
     crossframe.on 'getDocumentInfo', (cb) =>
       this.getDocumentInfo()

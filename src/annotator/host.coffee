@@ -43,6 +43,9 @@ module.exports = class Host extends Annotator
     @adderCtrl = @defaultGuest.getAdderCtrl()
     @plugins.CrossFrame = @crossframe
 
+    @_connectAnnotationSync(@crossframe)
+    @_connectAnnotationUISync(@crossframe)
+
     app.appendTo(@frame)
 
     this.on 'panelReady', =>
@@ -66,6 +69,7 @@ module.exports = class Host extends Annotator
     options = guestOptions || {}
     if @crossframe then options.crossframe = @crossframe
     if @adderCtrl then options.adderCtrl = @adderCtrl
+    if options.showHighlights == undefined then options.showHighlights = @visibleHighlights
 
     # Give an id if no guestId is provided
     # Note: Does not solve the scenario where two guests share the same document
@@ -127,9 +131,10 @@ module.exports = class Host extends Annotator
     return anchors
 
   selectAnnotations: (annotations) ->
-    # THESIS TODO: Make this work with multiple guests
-    @defaultGuest.selectAnnotations(annotations)
+    guestId = annotations[0].uri
+    @guests[guestId].selectAnnotations(annotations)
 
+  # Sets visibleHighlights for ALL guests
   setVisibleHighlights: (state) ->
     @visibleHighlights = state
 
@@ -140,4 +145,28 @@ module.exports = class Host extends Annotator
     @anchors = @getAnchors()
 
     return @anchors
+
+  _connectAnnotationSync: (crossframe) ->
+    this.subscribe 'annotationDeleted', (annotation) =>
+      guestId = annotation.uri
+      @guests[guestId].detach(annotation)
+
+    this.subscribe 'annotationsLoaded', (annotations) =>
+      for annotation in annotations
+        guestId = annotation.uri
+        @guests[guestId].anchor(annotation)
+
+  _connectAnnotationUISync: (crossframe) ->
+    self = this
+
+    crossframe.on 'focusAnnotations', (tags=[]) =>
+      for anchor in @anchors when anchor.highlights?
+        toggle = anchor.annotation.$tag in tags
+        $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
+
+    crossframe.on 'scrollToAnnotation', (tag) =>
+      for anchor in @anchors when anchor.highlights?
+        if anchor.annotation.$tag is tag
+          guestId = anchor.annotation.uri
+          self.guests[guestId].scrollIntoView(anchor.highlights[0])
 
