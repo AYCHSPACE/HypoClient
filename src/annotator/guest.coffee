@@ -310,7 +310,6 @@ module.exports = class Guest extends Annotator
       self.anchors = self.anchors.concat(anchors)
 
       # Let plugins know about the new information.
-      self.plugins.BucketBar?.update()
       self.plugins.CrossFrame?.sync([annotation])
 
       self.trigger('anchorsSynced')
@@ -359,7 +358,6 @@ module.exports = class Guest extends Annotator
     unhighlight = Array::concat(unhighlight...)
     raf =>
       highlighter.removeHighlights(unhighlight)
-      this.plugins.BucketBar?.update()
       @trigger('highlightsRemoved')
 
   createAnnotation: (annotation = {}) ->

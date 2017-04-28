@@ -81,16 +81,14 @@ module.exports = class Host extends Annotator
 
     options.guestUri = guestUri
 
-    # THESIS TODO: Consider decoupling the BucketBar from the Guest
-    options.plugins = {
-        BucketBar: @plugins.BucketBar,
-    }
+    options.plugins = {}
     # If this is the default guest, give it the host's document plugin
     if !@defaultGuest
       options.isDefault = true
       options.plugins.Document = @plugins.Document
     else
       options.isDefault = false
+      @plugins.BucketBar?.subscribe(guestElement.ownerDocument)
 
     guest = new Guest(guestElement, options)
     guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
@@ -114,18 +112,20 @@ module.exports = class Host extends Annotator
 
   destroy: ->
     @frame.remove()
+    @destroyAllGuests()
 
     for name, plugin of @plugins
       @plugins[name].destroy()
-
-    @destroyAllGuests()
 
   destroyAllGuests: ->
     for guestUri, guest of @guests
       destroyGuest(guestUri)
 
   destroyGuest: (guestUri) ->
-    @guests[guestUri].destroy()
+    guest = @guests[guestUri]
+
+    @plugins.BucketBar?.unsubscribe(guest.guestDocument)
+    guest.destroy()
     delete @guests[guestUri]
 
   getAnchors: ->
@@ -148,6 +148,7 @@ module.exports = class Host extends Annotator
 
   updateAnchors: ->
     @anchors = @getAnchors()
+    @plugins.BucketBar?.update()
 
     return @anchors
 

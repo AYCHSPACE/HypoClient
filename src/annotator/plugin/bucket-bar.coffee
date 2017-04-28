@@ -58,6 +58,8 @@ module.exports = class BucketBar extends Annotator.Plugin
 
     # Selectors for the scrollable elements on the page
     scrollables: ['body']
+    # Array of document objects
+    scrollableDocs: []
 
   # buckets of annotations that overlap
   buckets: []
@@ -87,6 +89,18 @@ module.exports = class BucketBar extends Annotator.Plugin
 
     for scrollable in @options.scrollables ? []
       $(scrollable).off 'resize scroll', @update
+
+    for scrollableDoc in @options.scrollableDocs
+      @unsubscribe(scrollableDoc)
+
+  subscribe: (doc) ->
+    doc.addEventListener 'scroll', @update
+    doc.addEventListener 'resize', @update
+    @options.scrollableDocs.push(doc)
+
+  unsubscribe: (doc) ->
+    doc.removeEventListener 'scroll', @update
+    doc.removeEventListener 'resize', @update
 
   _collate: (a, b) ->
     for i in [0..a.length-1]
