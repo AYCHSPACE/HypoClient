@@ -196,8 +196,9 @@ function Adder(container, options) {
         var guestFrame = this.guestElement.ownerDocument.defaultView.frameElement;
         if(guestFrame){
           var guestRect = guestFrame.getBoundingClientRect();
-          top = guestRect.top;
-          left = guestRect.left;
+          var scroll = {top: this.guestElement.scrollTop, left: this.guestElement.scrollLeft};
+          top = guestRect.top - scroll.top;
+          left = guestRect.left - scroll.left;
         }
     }
 
