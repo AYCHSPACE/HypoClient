@@ -155,7 +155,7 @@ module.exports = class Host extends Annotator
   _connectAnnotationSync: (crossframe) ->
     this.subscribe 'annotationDeleted', (annotation) =>
       guestUri = annotation.uri
-      @guests[guestUri].detach(annotation)
+      if (@guests[guestUri]) then @guests[guestUri].detach(annotation)
 
     this.subscribe 'annotationsLoaded', (annotations) =>
       for annotation in annotations
