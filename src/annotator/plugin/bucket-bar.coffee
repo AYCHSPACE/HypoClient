@@ -114,7 +114,20 @@ module.exports = class BucketBar extends Annotator.Plugin
         return points
 
       rect = highlighter.getBoundingClientRect(anchor.highlights)
-      x = rect.top
+      top = rect.top
+
+      highlight = anchor.highlights[0]
+      frameElement = highlight.ownerDocument.defaultView.frameElement
+
+      # If the highlight is within an iframe, then offset its position
+      if (frameElement)
+        frameOffset = frameElement.getBoundingClientRect()
+        if (rect.bottom > frameOffset.height) then top = frameOffset.height - rect.height
+        else if (rect.top < 0) then top = rect.height
+
+        top += frameOffset.top
+
+      x = top
       h = rect.bottom - rect.top
 
       if x < BUCKET_TOP_THRESHOLD
