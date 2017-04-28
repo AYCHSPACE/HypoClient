@@ -13,6 +13,7 @@ module.exports = class ReadiumSidebar extends Sidebar
   constructor: (element, options) ->
     ReadiumSDK = window.ReadiumSDK
     options['shiftNativeElements'] = true
+    cssHref = @getInjectCSSHref()
     super
 
     ReadiumSDK.once(ReadiumSDK.Events.READER_INITIALIZED, (readium) =>
@@ -21,7 +22,7 @@ module.exports = class ReadiumSidebar extends Sidebar
         # THESIS TODO: the chapter identifier is passed in as the guestId
         # Do we want this id to be more unique?
         this.addGuest(guestElement, null, spineItem.href)
-        @injectCSS($iframe)
+        @injectCSS($iframe, cssHref)
       )
 
       readium.on(ReadiumSDK.Events.CONTENT_DOCUMENT_UNLOADED, ($iframe, spineItem) =>
@@ -29,10 +30,19 @@ module.exports = class ReadiumSidebar extends Sidebar
       )
     )
 
-  injectCSS: (iframe) ->
+  # THESIS TODO: Temporary solution
+  injectCSS: (iframe, href) ->
     linkEl = document.createElement('link')
-    # THESIS TODO: Temporarily hardcoded. Improve at some point.
-    linkEl.href = "http://localhost:3001/hypothesis/1.13.0/build/styles/inject.css?099248"
+    linkEl.href = href
     linkEl.rel = "stylesheet"
     linkEl.type = "text/css"
     iframe[0].contentDocument.head.appendChild(linkEl)
+
+  getInjectCSSHref: ->
+    styleSheets = document.styleSheets
+    href = '';
+    for own index, styleSheet of styleSheets
+      if styleSheet.href && styleSheet.href.includes('inject.css')
+        return href = styleSheet.href
+
+    return href

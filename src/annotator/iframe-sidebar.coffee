@@ -12,17 +12,27 @@ module.exports = class IframeSidebar extends Sidebar
 
   constructor: (element, options) ->
     super
+    cssHref = @getInjectCSSHref()
 
     $("iframe:not('.h-sidebar-iframe')").each (i, iframe) =>
       $(iframe).on 'load', =>
         guestElement = iframe.contentDocument.body
         @addGuest(guestElement, null)
-        @injectCSS(iframe)
+        @injectCSS(iframe, cssHref)
 
-  injectCSS: (iframe) ->
+  # THESIS TODO: Temporary solution
+  injectCSS: (iframe, href) ->
     linkEl = document.createElement('link')
-    # THESIS TODO: Temporarily hardcoded. Improve at some point.
-    linkEl.href = "http://localhost:3001/hypothesis/1.13.0/build/styles/inject.css?099248"
+    linkEl.href = href
     linkEl.rel = "stylesheet"
     linkEl.type = "text/css"
     iframe.contentDocument.head.appendChild(linkEl)
+
+  getInjectCSSHref: ->
+    styleSheets = document.styleSheets
+    href = '';
+    for own index, styleSheet of styleSheets
+      if styleSheet.href && styleSheet.href.includes('inject.css')
+        return href = styleSheet.href
+
+    return href
