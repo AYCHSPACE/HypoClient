@@ -19,6 +19,23 @@ raf['@noCallThru'] = true
 scrollIntoView = sinon.stub()
 scrollIntoView['@noCallThru'] = true
 
+# The real guest holds/manages the guests, but this fakeHost doesn't
+# This is done to avoid needless complexity
+fakeHost = {
+  # When called, these functions should be bound to the guest being tested
+  focusAnnotations: (tags=[]) ->
+    guest = this
+    for anchor in guest.anchors when anchor.highlights?
+      toggle = anchor.annotation.$tag in tags
+      guest.focusAnnotation(anchor, toggle)
+
+  scrollToAnnotation: (tag) ->
+    guest = this
+    for anchor in guest.anchors when anchor.highlights?
+      if anchor.annotation.$tag is tag
+        guest.scrollToAnnotation(anchor.highlights[0])
+}
+
 class FakeAdder
   instance: null
 
@@ -127,6 +144,8 @@ describe 'Guest', ->
       it 'detaches annotations on "annotationDeleted"', ->
         ann = {id: 1, $tag: 'tag1'}
         sandbox.stub(guest, 'detach')
+        guest.subscribe 'annotationDeleted', (annotation) ->
+          guest.detach(annotation)
         options.emit('annotationDeleted', ann)
         assert.calledOnce(guest.detach)
         assert.calledWith(guest.detach, ann)
@@ -135,6 +154,9 @@ describe 'Guest', ->
         ann1 = {id: 1, $tag: 'tag1'}
         ann2 = {id: 2, $tag: 'tag2'}
         sandbox.stub(guest, 'anchor')
+        guest.subscribe 'annotationsLoaded', (annotations) ->
+          for annotation in annotations
+            guest.anchor(annotation)
         options.emit('annotationsLoaded', [ann1, ann2])
         assert.calledTwice(guest.anchor)
         assert.calledWith(guest.anchor, ann1)
@@ -166,6 +188,7 @@ describe 'Guest', ->
           {annotation: {$tag: 'tag1'}, highlights: highlight0.toArray()}
           {annotation: {$tag: 'tag2'}, highlights: highlight1.toArray()}
         ]
+        fakeCrossFrame.on('focusAnnotations', fakeHost.focusAnnotations.bind(guest))
         emitGuestEvent('focusAnnotations', ['tag1'])
         assert.isTrue(highlight0.hasClass('annotator-hl-focused'))
 
@@ -177,6 +200,7 @@ describe 'Guest', ->
           {annotation: {$tag: 'tag1'}, highlights: highlight0.toArray()}
           {annotation: {$tag: 'tag2'}, highlights: highlight1.toArray()}
         ]
+        fakeCrossFrame.on('focusAnnotations', fakeHost.focusAnnotations.bind(guest))
         emitGuestEvent('focusAnnotations', 'ctx', ['tag1'])
         assert.isFalse(highlight1.hasClass('annotator-hl-focused'))
 
@@ -191,6 +215,7 @@ describe 'Guest', ->
         guest.anchors = [
           {annotation: {$tag: 'tag1'}, highlights: highlight.toArray()}
         ]
+        fakeCrossFrame.on('scrollToAnnotation', fakeHost.scrollToAnnotation.bind(guest))
         emitGuestEvent('scrollToAnnotation', 'tag1')
         assert.called(scrollIntoView)
         assert.calledWith(scrollIntoView, highlight[0])
@@ -464,6 +489,7 @@ describe 'Guest', ->
         sync: sinon.stub()
       guest.plugins.BucketBar =
         update: sinon.stub()
+      guest.listenTo('anchorsSynced', guest.plugins.BucketBar.update)
       annotation = {}
       guest.anchor(annotation).then ->
         assert.called(guest.plugins.BucketBar.update)
@@ -530,6 +556,7 @@ describe 'Guest', ->
     it 'updates the bucket bar plugin', ->
       guest = createGuest()
       guest.plugins.BucketBar = update: sinon.stub()
+      guest.listenTo('highlightsRemoved', guest.plugins.BucketBar.update)
       annotation = {}
 
       guest.anchors.push({annotation})
@@ -551,6 +578,8 @@ describe 'Guest', ->
       annotation = {}
       highlights = [document.createElement('span')]
       removeHighlights = sandbox.stub(highlighter, 'removeHighlights')
+      guest.subscribe 'annotationDeleted', (annotation) ->
+        guest.detach(annotation)
 
       guest.anchors.push({annotation, highlights})
       guest.deleteAnnotation(annotation)
