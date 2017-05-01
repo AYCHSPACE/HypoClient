@@ -14,6 +14,9 @@ var mkdirp = require('mkdirp');
 var uglifyify = require('uglifyify');
 var watchify = require('watchify');
 
+var preludePath = path.join(__dirname, 'custom-prelude.js');
+var prelude = fs.readFileSync(preludePath, 'utf8');
+
 var log = gulpUtil.log;
 
 function streamFinished(stream) {
@@ -66,6 +69,8 @@ module.exports = function createBundle(config, buildOpts) {
 
   var bundleOpts = {
     debug: true,
+    prelude: prelude,
+    preludePath: preludePath,
     extensions: ['.coffee'],
 
     // Browserify will try to detect and automatically provide
