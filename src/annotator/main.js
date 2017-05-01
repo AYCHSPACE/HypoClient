@@ -49,7 +49,7 @@ Annotator.noConflict().$.noConflict(true)(function() {
   var Klass = Annotator.IframeSidebar;
   if (window.PDFViewerApplication) {
     Klass = Annotator.PdfSidebar;
-  } else if (window.ReadiumSDK) {
+  } else if (window.ReadiumSDK || options['detectReadium']) {
     Klass = Annotator.ReadiumSidebar;
   }
 

@@ -123,6 +123,7 @@ module.exports = class Host extends Annotator
 
   destroyGuest: (guestUri) ->
     guest = @guests[guestUri]
+    unless guest then return
 
     @plugins.BucketBar?.unsubscribe(guest.guestDocument)
     guest.destroy()
