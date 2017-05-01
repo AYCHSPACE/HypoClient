@@ -93,6 +93,10 @@ module.exports = class Guest extends Annotator
       @setVisibleHighlights(options.showHighlights)
       @adderCtrl = options.adderCtrl
 
+  focusAnnotation: (anchor, state) ->
+    if anchor.highlights
+      $(anchor.highlights).toggleClass('annotator-hl-focused', state)
+
   getAdderCtrl: ->
     return @adderCtrl
 
@@ -126,7 +130,7 @@ module.exports = class Guest extends Annotator
   hasSelection: ->
     return if @selectedRanges then @selectedRanges[0] != undefined else false
 
-  scrollIntoView: (highlight)->
+  scrollToAnnotation: (highlight)->
     scrollIntoView(highlight)
 
     # THESIS TODO: Temporary solution
@@ -417,22 +421,25 @@ module.exports = class Guest extends Annotator
 
     annotation
 
-  showAnnotations: (annotations) ->
-    tags = (a.$tag for a in annotations)
-    @crossframe?.call('showAnnotations', tags)
-    @trigger('showAnnotations')
+  _focusSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('focusAnnotations', tags)
 
-  toggleAnnotationSelection: (annotations) ->
-    tags = (a.$tag for a in annotations)
+  _showSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('showAnnotations', tags)
+    @trigger('showSidebarAnnotations')
+
+  _toggleSidebarAnnotationSelection: (annotations) ->
+    tags = @_getTags(annotations)
     @crossframe?.call('toggleAnnotationSelection', tags)
 
-  updateAnnotations: (annotations) ->
-    tags = (a.$tag for a in annotations)
+  _updateSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
     @crossframe?.call('updateAnnotations', tags)
 
-  focusAnnotations: (annotations) ->
-    tags = (a.$tag for a in annotations)
-    @crossframe?.call('focusAnnotations', tags)
+  _getTags: (annotations) ->
+    return (a.$tag for a in annotations)
 
   _onSelection: (range) ->
     selection = @guestDocument.getSelection()
@@ -470,9 +477,9 @@ module.exports = class Guest extends Annotator
 
   selectAnnotations: (annotations, toggle) ->
     if toggle
-      this.toggleAnnotationSelection annotations
+      this._toggleSidebarAnnotationSelection annotations
     else
-      this.showAnnotations annotations
+      this._showSidebarAnnotations annotations
 
   onHighlightMouseover: (event) ->
     return unless @visibleHighlights
@@ -485,11 +492,11 @@ module.exports = class Guest extends Annotator
     # highlights have time to add their annotations to the list stored on the
     # event object.
     if event.target is event.currentTarget
-      setTimeout => this.focusAnnotations(annotations)
+      setTimeout => this._focusSidebarAnnotations(annotations)
 
   onHighlightMouseout: (event) ->
     return unless @visibleHighlights
-    this.focusAnnotations []
+    this._focusSidebarAnnotations([])
 
   onHighlightClick: (event) ->
     return unless @visibleHighlights

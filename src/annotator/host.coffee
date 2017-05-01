@@ -168,11 +168,12 @@ module.exports = class Host extends Annotator
     crossframe.on 'focusAnnotations', (tags=[]) =>
       for anchor in @anchors when anchor.highlights?
         toggle = anchor.annotation.$tag in tags
-        $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
+        guestUri = anchor.annotation.uri
+        @guests[guestUri].focusAnnotation(anchor, toggle)
 
     crossframe.on 'scrollToAnnotation', (tag) =>
       for anchor in @anchors when anchor.highlights?
         if anchor.annotation.$tag is tag
           guestUri = anchor.annotation.uri
-          self.guests[guestUri].scrollIntoView(anchor.highlights[0])
+          self.guests[guestUri].scrollToAnnotation(anchor.highlights[0])
 
