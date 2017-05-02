@@ -20,7 +20,7 @@ module.exports = class CrossFrame extends Annotator.Plugin
 
     bridge = new CrossFrame.Bridge()
 
-    opts = extract(options, 'on', 'emit', 'guestUri')
+    opts = extract(options, 'on', 'emit')
     annotationSync = new CrossFrame.AnnotationSync(bridge, opts)
 
     this.pluginInit = ->
@@ -28,14 +28,7 @@ module.exports = class CrossFrame extends Annotator.Plugin
         bridge.createChannel(source, origin, token)
       discovery.startDiscovery(onDiscoveryCallback)
 
-    this.addGuest = (cfOptions, guestUri) ->
-      annotationSync.registerOnHandler(cfOptions.on, guestUri)
-      annotationSync.registerEmitHandler(cfOptions.emit, guestUri)
-      annotationSync.registerLocalListeners(guestUri)
-
     this.removeGuest = (guestUri) ->
-      annotationSync.removeOnHandler(guestUri)
-      annotationSync.removeEmitHandler(guestUri)
       bridge.removeGuestListeners(guestUri)
 
     this.destroy = ->

@@ -39,8 +39,16 @@ module.exports = class Host extends Annotator
       if not @plugins[name] and Annotator.Plugin[name]
         @addPlugin(name, opts)
 
+    cfOptions =
+      on: (event, handler) =>
+        this.subscribe(event, handler)
+      emit: (event, args...) =>
+        this.publish(event, args)
+
+    @addPlugin('CrossFrame', cfOptions)
+    @crossframe = @plugins.CrossFrame
+    @crossframe.onConnect(=> @publish('panelReady'))
     @defaultGuest = @addGuest(element, options)
-    @crossframe = @defaultGuest.getCrossframe()
     @adderCtrl = @defaultGuest.getAdderCtrl()
     @plugins.CrossFrame = @crossframe
 
@@ -68,9 +76,9 @@ module.exports = class Host extends Annotator
 
   addGuest: (guestElement, guestOptions, guestUri) ->
     options = guestOptions || {}
-    if @crossframe then options.crossframe = @crossframe
     if @adderCtrl then options.adderCtrl = @adderCtrl
     if options.showHighlights == undefined then options.showHighlights = @visibleHighlights
+    options.crossframe = @crossframe
 
     # Give an id if no guestUri is provided
     # Note: Does not solve the scenario where two guests share the same document

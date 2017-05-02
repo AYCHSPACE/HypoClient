@@ -20,16 +20,11 @@ function AnnotationSync(bridge, options) {
 
   this.cache = {};
 
-  // Contains a hash of _on's and _emit's, respective to their guestUri's.
-  this._on = {};
-  this._emit = {};
-
-  this.defaultUri = options.guestUri;
-  this._on[this.defaultUri] = options.on;
-  this._emit[this.defaultUri] = options.emit;
+  this._on = options.on;
+  this._emit = options.emit;
 
   // Listen locally for interesting events
-  this.registerLocalListeners(this.defaultUri);
+  this.registerLocalListeners();
 
   // Register remotely invokable methods
   this.registerRemoteListeners();
@@ -39,27 +34,17 @@ function AnnotationSync(bridge, options) {
 // association of annotations received in arguments to window-local copies.
 AnnotationSync.prototype.cache = null;
 
-AnnotationSync.prototype.registerEmitHandler = function(emit, guestUri) {
-  this._emit[guestUri] = emit;
-}
-
 AnnotationSync.prototype.registerLocalListeners = function(guestUri) {
   var self = this;
 
   Object.keys(this._eventListeners).forEach(function(eventName) {
     var listener = self._eventListeners[eventName];
-    self._on[guestUri](eventName, function(annotation) {
+    self._on(eventName, function(annotation) {
       listener.apply(self, [annotation]);
     });
   });
 }
 
-AnnotationSync.prototype.registerOnHandler = function(on, guestUri) {
-  var self = this;
-  this._on[guestUri] = on;
-}
-
-// THESIS TODO: Remote events are registered, but never removed. Investigate this.
 AnnotationSync.prototype.registerRemoteListeners = function() {
   var self = this;
 
@@ -69,14 +54,6 @@ AnnotationSync.prototype.registerRemoteListeners = function() {
       listener.apply(self, [data, callbackFunction]);
     });
   });
-}
-
-AnnotationSync.prototype.removeEmitHandler = function(guestUri) {
-  delete this._emit[guestUri];
-}
-
-AnnotationSync.prototype.removeOnHandler = function(guestUri) {
-  delete this._on[guestUri];
 }
 
 AnnotationSync.prototype.sync = function(annotations) {
@@ -110,7 +87,7 @@ AnnotationSync.prototype._channelListeners = {
     var annotation = this._parse(body);
     delete this.cache[annotation.$tag];
 
-    this._emit[this.defaultUri]('annotationDeleted', annotation);
+    this._emit('annotationDeleted', annotation);
     cb(null, this._format(annotation));
   },
   'loadAnnotations': function(bodies, cb) {
@@ -124,7 +101,7 @@ AnnotationSync.prototype._channelListeners = {
       return parsedAnnotations;
     }).call(this);
 
-    this._emit[this.defaultUri]('annotationsLoaded', annotations);
+    this._emit('annotationsLoaded', annotations);
     return cb(null, annotations);
   },
 };

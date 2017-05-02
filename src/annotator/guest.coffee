@@ -52,7 +52,7 @@ module.exports = class Guest extends Annotator
   visibleHighlights: false
   guestDocument: null
   guestUri: null
-  isDefault: true
+  isDefault: false
   hasCustomUri: false
 
   html: extend {}, Annotator::html,
@@ -67,7 +67,7 @@ module.exports = class Guest extends Annotator
     self = this
     this.guestDocument = element.ownerDocument
     this.guestUri = options.guestUri
-    this.isDefault = if options.isDefault != undefined then options.isDefault else true
+    this.isDefault = options.isDefault || false
     this.hasCustomUri = options.hasCustomUri || false
 
     this.selections = selections(@guestDocument).subscribe
@@ -84,14 +84,9 @@ module.exports = class Guest extends Annotator
 
     @setPlugins(options.plugins)
 
-    # The default guest must instantiate certain things (eg. Crossframe)
-    # Whereas the additional guests merely get these passed in
-    if (this.isDefault)
-      @_setupDefaultGuest()
-    else
-      @setCrossframe(options.crossframe)
-      @setVisibleHighlights(options.showHighlights)
-      @adderCtrl = options.adderCtrl
+    @setCrossframe(options.crossframe)
+    @setVisibleHighlights(options.showHighlights)
+    @adderCtrl = options.adderCtrl
 
   focusAnnotation: (anchor, state) ->
     if anchor.highlights
@@ -149,20 +144,8 @@ module.exports = class Guest extends Annotator
       defaultView.scrollTo(left, top)
 
   setCrossframe: (crossframe) ->
-    cfOptions =
-      on: (event, handler) =>
-        this.subscribe(event, handler)
-      emit: (event, args...) =>
-        this.publish(event, args)
-
-    if (crossframe)
-      @crossframe = crossframe
-      @crossframe.loadGuestAnnotations(@guestUri)
-      @crossframe.addGuest(cfOptions, @guestUri)
-    else
-      cfOptions.guestUri = @guestUri
-      @addPlugin('CrossFrame', cfOptions)
-      @crossframe = @plugins.CrossFrame
+    @crossframe = crossframe
+    @crossframe.loadGuestAnnotations(@guestUri)
 
     this._connectAnnotationUISync(@crossframe, @guestUri)
 
@@ -208,12 +191,6 @@ module.exports = class Guest extends Annotator
     @setVisibleHighlights(true)
     @createHighlight()
     @guestDocument.getSelection().removeAllRanges()
-
-  _setupDefaultGuest: ->
-    @setCrossframe()
-
-    @crossframe.onConnect(=> @publish('panelReady'))
-    @adderCtrl = new adder.Adder(@adder[0])
 
   _setupWrapper: ->
     @wrapper = @element
@@ -511,6 +488,8 @@ module.exports = class Guest extends Annotator
 
   # Pass true to show the highlights in the frame or false to disable.
   setVisibleHighlights: (shouldShowHighlights) ->
+    if shouldShowHighlights == undefined then shouldShowHighlights = true
+
     @crossframe?.call('setVisibleHighlights', shouldShowHighlights)
     this.toggleHighlightClass(shouldShowHighlights)
     this.publish 'setVisibleHighlights', shouldShowHighlights
