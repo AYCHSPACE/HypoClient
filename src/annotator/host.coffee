@@ -1,10 +1,15 @@
 Annotator = require('annotator')
 $ = Annotator.$
-
 Guest = require('./guest')
+
+adder = require('./adder')
+extend = require('extend')
 
 module.exports = class Host extends Annotator
   SHOW_HIGHLIGHTS_CLASS = 'annotator-highlights-always-on'
+
+  html: extend {}, Annotator::html,
+    adder: '<hypothesis-adder></hypothesis-adder>';
 
   constructor: (element, options) ->
     # Make a copy of all options except `options.app`, the app base URL.
@@ -48,8 +53,9 @@ module.exports = class Host extends Annotator
     @addPlugin('CrossFrame', cfOptions)
     @crossframe = @plugins.CrossFrame
     @crossframe.onConnect(=> @publish('panelReady'))
+    @adderCtrl = new adder.Adder(@adder[0])
+
     @defaultGuest = @addGuest(element, options)
-    @adderCtrl = @defaultGuest.getAdderCtrl()
     @plugins.CrossFrame = @crossframe
 
     @_connectAnnotationSync(@crossframe)
@@ -76,9 +82,9 @@ module.exports = class Host extends Annotator
 
   addGuest: (guestElement, guestOptions, guestUri) ->
     options = guestOptions || {}
-    if @adderCtrl then options.adderCtrl = @adderCtrl
-    if options.showHighlights == undefined then options.showHighlights = @visibleHighlights
     options.crossframe = @crossframe
+    options.adderCtrl = @adderCtrl
+    options.showHighlights = @visibleHighlights
 
     # Give an id if no guestUri is provided
     # Note: Does not solve the scenario where two guests share the same document

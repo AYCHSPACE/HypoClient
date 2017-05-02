@@ -1,12 +1,10 @@
 baseURI = require('document-base-uri')
-extend = require('extend')
 raf = require('raf')
 scrollIntoView = require('scroll-into-view')
 
 Annotator = require('annotator')
 $ = Annotator.$
 
-adder = require('./adder')
 highlighter = require('./highlighter')
 rangeUtil = require('./range-util')
 selections = require('./selections')
@@ -54,9 +52,6 @@ module.exports = class Guest extends Annotator
   guestUri: null
   isDefault: false
   hasCustomUri: false
-
-  html: extend {}, Annotator::html,
-    adder: '<hypothesis-adder></hypothesis-adder>';
 
   constructor: (element, options) ->
     super
