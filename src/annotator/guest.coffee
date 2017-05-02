@@ -87,14 +87,8 @@ module.exports = class Guest extends Annotator
     if anchor.highlights
       $(anchor.highlights).toggleClass('annotator-hl-focused', state)
 
-  getAdderCtrl: ->
-    return @adderCtrl
-
   getAnchors: ->
     return @anchors
-
-  getCrossframe: ->
-    return @crossframe
 
   # Get the document info
   getDocumentInfo: ->
