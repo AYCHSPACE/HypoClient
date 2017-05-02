@@ -145,7 +145,7 @@ module.exports = class Sidebar extends Host
         @hide()
 
     guest.listenTo('showSidebarAnnotations', @show.bind(this))
-    guest.listenTo('createAnnotation', @annotationCreated.bind(this))
+    guest.listenTo('beforeAnnotationCreated', @annotationCreated.bind(this))
 
     return guest
 

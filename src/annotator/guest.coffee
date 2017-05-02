@@ -368,10 +368,9 @@ module.exports = class Guest extends Annotator
     metadata = info.then(setDocumentInfo)
     targets = Promise.all([info, selectors]).then(setTargets)
 
-    targets.then(-> self.publish('beforeAnnotationCreated', [annotation]))
+    targets.then(-> self.trigger('beforeAnnotationCreated', [annotation]))
     targets.then(-> self.anchor(annotation))
 
-    @trigger('createAnnotation', annotation)
     annotation
 
   createHighlight: ->
@@ -389,7 +388,7 @@ module.exports = class Guest extends Annotator
 
     this.getDocumentInfo()
       .then(prepare)
-      .then(-> self.publish('beforeAnnotationCreated', [annotation]))
+      .then(-> self.trigger('beforeAnnotationCreated', [annotation]))
 
     annotation
 
@@ -487,7 +486,6 @@ module.exports = class Guest extends Annotator
 
     @crossframe?.call('setVisibleHighlights', shouldShowHighlights)
     this.toggleHighlightClass(shouldShowHighlights)
-    this.publish 'setVisibleHighlights', shouldShowHighlights
 
   toggleHighlightClass: (shouldShowHighlights) ->
     if shouldShowHighlights

@@ -107,9 +107,13 @@ module.exports = class Host extends Annotator
     guest = new Guest(guestElement, options)
     guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
     guest.listenTo('highlightsRemoved', @updateAnchors.bind(this))
+    guest.listenTo('beforeAnnotationCreated', @beforeAnnotationCreated.bind(this))
 
     @guests[guestUri] = guest
     return guest
+
+  beforeAnnotationCreated: (annotations) ->
+    @publish('beforeAnnotationCreated', annotations)
 
   createAnnotation: ->
     foundSelected = false
@@ -159,6 +163,8 @@ module.exports = class Host extends Annotator
 
     for guestUri, guest of @guests
       guest.setVisibleHighlights(state)
+
+    @publish('setVisibleHighlights', state)
 
   updateAnchors: ->
     @anchors = @getAnchors()
