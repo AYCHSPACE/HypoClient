@@ -12,22 +12,20 @@ module.exports = class IframeSidebar extends Sidebar
 
   constructor: (element, options) ->
     super
-    cssHref = @getInjectCSSHref()
+    @_cssHref = @_getInjectCSSHref()
 
     $("iframe:not('.h-sidebar-iframe')").each (i, iframe) =>
-      $(iframe).on 'load', =>
-        guestElement = iframe.contentDocument.body
-        @injectCSS(iframe, cssHref)
+      @_iframeAdded(iframe)
 
   # THESIS TODO: Temporary solution
-  injectCSS: (iframe, href) ->
+  _injectCSS: (iframe, href) ->
     linkEl = document.createElement('link')
     linkEl.href = href
     linkEl.rel = "stylesheet"
     linkEl.type = "text/css"
     iframe.contentDocument.head.appendChild(linkEl)
 
-  getInjectCSSHref: ->
+  _getInjectCSSHref: ->
     styleSheets = document.styleSheets
     href = '';
     for own index, styleSheet of styleSheets
@@ -35,3 +33,8 @@ module.exports = class IframeSidebar extends Sidebar
         return href = styleSheet.href
 
     return href
+
+  _iframeAdded: (iframe) ->
+    $(iframe).on 'load', =>
+      guestElement = iframe.contentDocument.body
+      @_injectCSS(iframe, @_cssHref)
