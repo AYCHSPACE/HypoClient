@@ -128,6 +128,7 @@ module.exports = class Host extends Annotator
     @plugins.BucketBar?.unsubscribe(guest.guestDocument)
     guest.destroy()
     delete @guests[guestUri]
+    @updateAnchors()
 
   getAnchors: ->
     anchors = []
