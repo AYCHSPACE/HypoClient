@@ -82,8 +82,15 @@ function LiveReloadServer(port, config) {
               Number of annotations:
               <span data-hypothesis-annotation-count>...</span>
             </div>
-            <iframe src="/document/license" style="margin: 20px 0 20px 0;width: 40%;height: 300px;"></iframe>
-            <iframe src="/document/changelog" style="margin: 20px 0 20px 0;width: 40%;height: 300px;"></iframe>
+            <div style="margin: 10px 0 0 75px;">
+              <button id="add-test" style="padding: 0.6em; font-size: 0.75em">Toggle 2nd Frame</button>
+            </div>
+            <div style="margin: 10px 0 0 75px;">
+              <iframe id="iframe1" src="/document/license" style="width: 50%;height: 300px;"></iframe>
+            </div>
+            <div id="iframe2-container" style="margin: 10px 0 0 75px;">
+              <!--<iframe src="/document/changelog" style="width: 50%;height: 300px;"></iframe>-->
+            </div>
             <pre style="margin: 20px 75px 75px 75px;">${readmeText()}</pre>
             <script>
             var appHost = document.location.hostname;
@@ -106,6 +113,24 @@ function LiveReloadServer(port, config) {
             var embedScript = document.createElement('script');
             embedScript.src = '${config.clientUrl}';
             document.body.appendChild(embedScript);
+            
+            var iframeIsAdded = false;
+            document.querySelector('#add-test').addEventListener('click', function() {
+              if (!iframeIsAdded) {
+                var iframe1 = document.querySelector('#iframe1');
+                var iframeNew = iframe1.cloneNode();
+                iframeNew.src = "/document/changelog";
+                iframeNew.id = "iframe2";
+                iframeIsAdded = true;
+                document.querySelector('#iframe2-container').appendChild(iframeNew);
+                annotator._iframeAdded(iframeNew);
+              } else {
+                var iframe2 = document.querySelector('#iframe2');
+                annotator._iframeRemoved(iframe2.contentDocument.location.href);
+                iframe2.parentNode.removeChild(iframe2);
+                iframeIsAdded = false;
+              }
+            });
             </script>
           </body>
           </html>
