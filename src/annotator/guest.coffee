@@ -420,7 +420,6 @@ module.exports = class Guest extends Annotator
   showAnnotations: (annotations) ->
     tags = (a.$tag for a in annotations)
     @crossframe?.call('showAnnotations', tags)
-    @trigger('showAnnotations')
 
   toggleAnnotationSelection: (annotations) ->
     tags = (a.$tag for a in annotations)
@@ -500,7 +499,9 @@ module.exports = class Guest extends Annotator
     # See the comment in onHighlightMouseover
     if event.target is event.currentTarget
       xor = (event.metaKey or event.ctrlKey)
-      setTimeout => this.selectAnnotations(annotations, xor)
+      setTimeout =>
+        this.selectAnnotations(annotations, xor)
+        @trigger('openSidebar')
 
   # Pass true to show the highlights in the frame or false to disable.
   setVisibleHighlights: (shouldShowHighlights) ->
