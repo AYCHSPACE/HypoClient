@@ -144,7 +144,6 @@ module.exports = class Sidebar extends Host
       if !@selectedTargets?.length
         @hide()
 
-    guest.listenTo('showSidebarAnnotations', @show.bind(this))
     guest.listenTo('beforeAnnotationCreated', @annotationCreated.bind(this))
 
     return guest
@@ -215,3 +214,8 @@ module.exports = class Sidebar extends Host
 
   annotationCreated: (annotation = {}) ->
     this.show() unless annotation.$highlight
+
+  _showSidebarAnnotations: ->
+    super
+
+    this.show()

@@ -362,7 +362,7 @@ module.exports = class Guest extends Annotator
     metadata = info.then(setDocumentInfo)
     targets = Promise.all([info, selectors]).then(setTargets)
 
-    targets.then(-> self.trigger('beforeAnnotationCreated', [annotation]))
+    targets.then(-> self.trigger('beforeAnnotationCreated', annotation))
     targets.then(-> self.anchor(annotation))
 
     annotation
@@ -382,29 +382,9 @@ module.exports = class Guest extends Annotator
 
     this.getDocumentInfo()
       .then(prepare)
-      .then(-> self.trigger('beforeAnnotationCreated', [annotation]))
+      .then(-> self.trigger('beforeAnnotationCreated', annotation))
 
     annotation
-
-  _focusSidebarAnnotations: (annotations) ->
-    tags = @_getTags(annotations)
-    @crossframe?.call('focusAnnotations', tags)
-
-  _showSidebarAnnotations: (annotations) ->
-    tags = @_getTags(annotations)
-    @crossframe?.call('showAnnotations', tags)
-    @trigger('showSidebarAnnotations')
-
-  _toggleSidebarAnnotationSelection: (annotations) ->
-    tags = @_getTags(annotations)
-    @crossframe?.call('toggleAnnotationSelection', tags)
-
-  _updateSidebarAnnotations: (annotations) ->
-    tags = @_getTags(annotations)
-    @crossframe?.call('updateAnnotations', tags)
-
-  _getTags: (annotations) ->
-    return (a.$tag for a in annotations)
 
   _onSelection: (range) ->
     selection = @guestDocument.getSelection()
@@ -440,12 +420,6 @@ module.exports = class Guest extends Annotator
       .removeClass('h-icon-annotate')
       .addClass('h-icon-note');
 
-  selectAnnotations: (annotations, toggle) ->
-    if toggle
-      this._toggleSidebarAnnotationSelection annotations
-    else
-      this._showSidebarAnnotations annotations
-
   onHighlightMouseover: (event) ->
     return unless @visibleHighlights
     annotation = $(event.currentTarget).data('annotation')
@@ -457,11 +431,11 @@ module.exports = class Guest extends Annotator
     # highlights have time to add their annotations to the list stored on the
     # event object.
     if event.target is event.currentTarget
-      setTimeout => this._focusSidebarAnnotations(annotations)
+      setTimeout => this.trigger('focusSidebarAnnotations', annotations)
 
   onHighlightMouseout: (event) ->
     return unless @visibleHighlights
-    this._focusSidebarAnnotations([])
+    this.trigger('focusSidebarAnnotations', [])
 
   onHighlightClick: (event) ->
     return unless @visibleHighlights
@@ -472,7 +446,7 @@ module.exports = class Guest extends Annotator
     # See the comment in onHighlightMouseover
     if event.target is event.currentTarget
       xor = (event.metaKey or event.ctrlKey)
-      setTimeout => this.selectAnnotations(annotations, xor)
+      setTimeout => this.trigger('selectAnnotations', annotations, xor)
 
   # Pass true to show the highlights in the frame or false to disable.
   setVisibleHighlights: (shouldShowHighlights) ->

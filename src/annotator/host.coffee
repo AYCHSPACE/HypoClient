@@ -107,13 +107,16 @@ module.exports = class Host extends Annotator
     guest = new Guest(guestElement, options)
     guest.listenTo('anchorsSynced', @updateAnchors.bind(this))
     guest.listenTo('highlightsRemoved', @updateAnchors.bind(this))
+
     guest.listenTo('beforeAnnotationCreated', @beforeAnnotationCreated.bind(this))
+    guest.listenTo('focusSidebarAnnotations', @_focusSidebarAnnotations.bind(this))
+    guest.listenTo('selectAnnotations', @selectAnnotations.bind(this))
 
     @guests[guestUri] = guest
     return guest
 
-  beforeAnnotationCreated: (annotations) ->
-    @publish('beforeAnnotationCreated', annotations)
+  beforeAnnotationCreated: (annotation) ->
+    @publish('beforeAnnotationCreated', [annotation])
 
   createAnnotation: ->
     foundSelected = false
@@ -154,9 +157,11 @@ module.exports = class Host extends Annotator
 
     return anchors
 
-  selectAnnotations: (annotations) ->
-    guestUri = annotations[0].uri
-    @guests[guestUri].selectAnnotations(annotations)
+  selectAnnotations: (annotations, toggle) ->
+    if toggle
+      this._toggleSidebarAnnotationSelection(annotations)
+    else
+      this._showSidebarAnnotations(annotations)
 
   # Sets visibleHighlights for ALL guests
   setVisibleHighlights: (state) ->
@@ -197,4 +202,23 @@ module.exports = class Host extends Annotator
         if anchor.annotation.$tag is tag
           guestUri = anchor.annotation.uri
           self.guests[guestUri].scrollToAnnotation(anchor.highlights[0])
+
+  _getTags: (annotations) ->
+    return (a.$tag for a in annotations)
+
+  _focusSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('focusAnnotations', tags)
+
+  _showSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('showAnnotations', tags)
+
+  _toggleSidebarAnnotationSelection: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('toggleAnnotationSelection', tags)
+
+  _updateSidebarAnnotations: (annotations) ->
+    tags = @_getTags(annotations)
+    @crossframe?.call('updateAnnotations', tags)
 
