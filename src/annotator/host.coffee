@@ -1,6 +1,7 @@
 $ = require('jquery')
 
 Guest = require('./guest')
+IFrameManager = require('./iframe-manager')
 
 module.exports = class Host extends Guest
   constructor: (element, options) ->
@@ -28,6 +29,8 @@ module.exports = class Host extends Guest
     .appendTo(element)
 
     super
+
+    iFrameManager = new IFrameManager()
 
     app.appendTo(@frame)
 
