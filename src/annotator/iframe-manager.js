@@ -1,17 +1,18 @@
 'use strict';
 
 var $ = require('jquery');
+var EventEmitter = require('tiny-emitter');
 module.exports = IFrameManager;
 
 function IFrameManager() {
   this.iframes = {};
-  var scriptUrl = 'http://localhost:3001/hypothesis';
+  this.activeIframe = null;
+  this.eventEmitter = new EventEmitter();
 
   // THESIS TODO: Remove window, for debugging only
   var self = window.self = this;
   var iframes = this.findIFrames();
   this.addIFrames(iframes);
-  // this._injectScript(iframes, scriptUrl);
 
   this._observer = new MutationObserver(this._checkForIFrames.bind(this));
 
@@ -31,7 +32,14 @@ IFrameManager.prototype.addIFrame = function(iframe, uri) {
   };
 
   this.iframes[uri] = container;
-  // this._injectScript(iframe, 'http://localhost:3001/hypothesis');
+  var self = this;
+  $(iframe).mouseenter(function() {
+    self._setActiveIFrame(iframe);
+  });
+  $(iframe).mouseleave(function() {
+    self._setActiveIFrame();
+  });
+  this.eventEmitter.emit('iFrameAdded', iframe);
 
   return container;
 }
@@ -49,6 +57,9 @@ IFrameManager.prototype.removeIFrame = function(iframe) {
   $.each(this.iframes, function (key, container) {
     if (container.iframe === iframe) delete self.iframes[key];
   });
+
+  $(iframe).off('mouseenter mouseleave');
+  this.eventEmitter.emit('iFrameRemoved', iframe);
 }
 
 IFrameManager.prototype.destroy = function() {
@@ -72,13 +83,37 @@ IFrameManager.prototype.findIFrames = function() {
   return iframes;
 }
 
+IFrameManager.prototype.getActiveIFrame = function() {
+  return this.activeIFrame;
+}
+
+IFrameManager.prototype.getIFrame = function(uri) {
+  var container = this.iframes[uri];
+  return container ? container.iframe : false;
+}
+
+IFrameManager.prototype.getIFrames = function() {
+  return this.iframes;
+}
+
 // THESIS TODO: Doesn't work with cross origin iframes
 IFrameManager.prototype.getIFrameUri = function(iframe) {
   var uri = iframe.contentDocument.location.href;
   return uri;
 }
 
-IFrameManager.prototype._injectScript = function(iframe, scriptSrc, i) {
+// THESIS TODO: Currently designed for easy testing. Will need to rethink this later on.
+IFrameManager.prototype.injectCss = function(iframe, cssPathFragment, i) {
+  var el = document.createElement('link');
+  el.href = this._getCSSHref(cssPathFragment);
+  el.rel = "stylesheet";
+  el.type = "text/css";
+
+
+  iframe.contentDocument.head.appendChild(el);
+}
+
+IFrameManager.prototype.injectScript = function(iframe, scriptSrc, i) {
   if (!iframe) return;
 
   var iframes;
@@ -101,6 +136,14 @@ IFrameManager.prototype._injectScript = function(iframe, scriptSrc, i) {
   }
 }
 
+IFrameManager.prototype.on = function(eventName, callback) {
+  this.eventEmitter.on(eventName, callback);
+}
+
+IFrameManager.prototype.off = function(eventName, callback) {
+  this.eventEmitter.off(eventName, callback);
+}
+
 IFrameManager.prototype._checkForIFrames = function(mutations) {
   var self = this;
   mutations.forEach(function(mutation) {
@@ -121,4 +164,23 @@ IFrameManager.prototype._checkForIFrames = function(mutations) {
       if (node.tagName === 'IFRAME') self.removeIFrame(node);
     })
   });
+}
+
+IFrameManager.prototype._getCSSHref = function(fragment) {
+  var styleSheets = document.styleSheets
+  var href = '';
+  for (var i in styleSheets) {
+    var styleSheet = styleSheets[i];
+    if (styleSheets.hasOwnProperty(i) && 
+        styleSheet.href && styleSheet.href.includes(fragment)) {
+      return href = styleSheet.href;
+    }
+  }
+
+  return href;
+}
+
+IFrameManager.prototype._setActiveIFrame = function(iframe) {
+  this.activeIFrame = iframe || null;
+  this.eventEmitter.emit('activeIFrameChanged', iframe);
 }
