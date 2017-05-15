@@ -28,7 +28,7 @@ module.exports = class Sidebar extends Host
     this.hide()
 
     if options.openSidebar || options.annotations || options.query
-      this.on 'panelReady', => this.show()
+      @defaultGuest.on 'panelReady', => this.show()
 
     if @plugins.BucketBar?
       @plugins.BucketBar.element.on 'click', (event) => this.show()
