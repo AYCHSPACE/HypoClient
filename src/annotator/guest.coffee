@@ -6,6 +6,7 @@ scrollIntoView = require('scroll-into-view')
 Delegator = require('./delegator')
 $ = require('jquery')
 
+Bridge = require('../shared/bridge')
 adder = require('./adder')
 highlighter = require('./highlighter')
 rangeUtil = require('./range-util')
@@ -39,6 +40,8 @@ module.exports = class Guest extends Delegator
     ".annotator-hl click":               "onHighlightClick"
     ".annotator-hl mouseover":           "onHighlightMouseover"
     ".annotator-hl mouseout":            "onHighlightMouseout"
+    "click":                             "onElementClick"
+    "touchstart":                        "onElementTouchStart"
 
   options:
     Document: {}
@@ -73,6 +76,13 @@ module.exports = class Guest extends Delegator
     super
 
     this.adder = $(this.html.adder).appendTo(@element).hide()
+    this._bridge = new Bridge()
+    this._setupBridgeEvents();
+
+    uri = window.location.href
+    # THESIS TODO: uri used as token for testing, find a real solution
+    token = uri
+    this._bridge.createChannel(window, uri, token)
     
     self = this
     this.adderCtrl = new adder.Adder(@adder[0], {
@@ -103,7 +113,7 @@ module.exports = class Guest extends Delegator
     this.addPlugin('CrossFrame', cfOptions)
     @crossframe = this.plugins.CrossFrame
 
-    @crossframe.onConnect(=> this.publish('panelReady'))
+    @crossframe.onConnect(=> this._bridge.call('panelReady'))
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe)
 
@@ -251,7 +261,6 @@ module.exports = class Guest extends Delegator
       self.anchors = self.anchors.concat(anchors)
 
       # Let plugins know about the new information.
-      self.plugins.BucketBar?.update()
       self.plugins.CrossFrame?.sync([annotation])
 
       return anchors
@@ -332,9 +341,13 @@ module.exports = class Guest extends Delegator
     metadata = info.then(setDocumentInfo)
     targets = Promise.all([info, selectors]).then(setTargets)
 
-    targets.then(-> self.publish('beforeAnnotationCreated', [annotation]))
+    targets.then(->
+      self._bridge.call('beforeAnnotationCreated', annotation)
+      self.publish('beforeAnnotationCreated', [annotation])
+    )
     targets.then(-> self.anchor(annotation))
 
+    this._bridge.call('showSidebar') unless annotation.$highlight
     annotation
 
   createHighlight: ->
@@ -352,7 +365,10 @@ module.exports = class Guest extends Delegator
 
     this.getDocumentInfo()
       .then(prepare)
-      .then(-> self.publish('beforeAnnotationCreated', [annotation]))
+      .then(-> 
+        self._bridge.call('beforeAnnotationCreated', annotation)
+        self.publish('beforeAnnotationCreated', [annotation])
+      )
 
     annotation
 
@@ -373,6 +389,7 @@ module.exports = class Guest extends Delegator
   showAnnotations: (annotations) ->
     tags = (a.$tag for a in annotations)
     @crossframe?.call('showAnnotations', tags)
+    this._bridge.call('showSidebar')
 
   toggleAnnotationSelection: (annotations) ->
     tags = (a.$tag for a in annotations)
@@ -414,11 +431,43 @@ module.exports = class Guest extends Delegator
       .removeClass('h-icon-annotate')
       .addClass('h-icon-note');
 
+  _setupBridgeEvents: (events, i) ->
+    i = 0 unless i
+    if (!events)
+      events = [
+        {
+          name: 'setVisibleHighlights'
+          method: @setVisibleHighlights
+        },
+        {
+          name: 'createAnnotation'
+          method: @createAnnotation
+        }
+      ]
+
+    this._bridge.on(events[i].name, events[i].method.bind(this))
+
+    if (i < events.length - 1)
+      this._setupBridgeEvents(events, ++i)
+
   selectAnnotations: (annotations, toggle) ->
     if toggle
       this.toggleAnnotationSelection annotations
     else
       this.showAnnotations annotations
+
+  onElementClick: (event) ->
+    if !@selectedTargets?.length
+      @_bridge.call('hideSidebar')
+
+  onElementTouchStart: (event) ->
+    # Mobile browsers do not register click events on
+    # elements without cursor: pointer. So instead of
+    # adding that to every element, we can add the initial
+    # touchstart event which is always registered to
+    # make up for the lack of click support for all elements.
+    if !@selectedTargets?.length
+        @_bridge.call('hideSidebar')
 
   onHighlightMouseover: (event) ->
     return unless @visibleHighlights
@@ -452,7 +501,8 @@ module.exports = class Guest extends Delegator
   setVisibleHighlights: (shouldShowHighlights) ->
     @crossframe?.call('setVisibleHighlights', shouldShowHighlights)
     this.toggleHighlightClass(shouldShowHighlights)
-    this.publish 'setVisibleHighlights', shouldShowHighlights
+    # THESIS TODO: We we need this line?
+    # this.publish 'setVisibleHighlights', shouldShowHighlights
 
   toggleHighlightClass: (shouldShowHighlights) ->
     if shouldShowHighlights

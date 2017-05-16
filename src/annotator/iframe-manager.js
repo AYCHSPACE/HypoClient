@@ -88,8 +88,7 @@ IFrameManager.prototype.getActiveIFrame = function() {
 }
 
 IFrameManager.prototype.getIFrame = function(uri) {
-  var container = this.iframes[uri];
-  return container ? container.iframe : false;
+  return this.iframes[uri];
 }
 
 IFrameManager.prototype.getIFrames = function() {
@@ -103,7 +102,7 @@ IFrameManager.prototype.getIFrameUri = function(iframe) {
 }
 
 // THESIS TODO: Currently designed for easy testing. Will need to rethink this later on.
-IFrameManager.prototype.injectCss = function(iframe, cssPathFragment, i) {
+IFrameManager.prototype.injectCss = function(iframe, cssPathFragment) {
   var el = document.createElement('link');
   el.href = this._getCSSHref(cssPathFragment);
   el.rel = "stylesheet";

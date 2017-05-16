@@ -14,8 +14,8 @@ module.exports = class IframeSidebar extends Sidebar
     super
     @_cssHref = @_getInjectCSSHref()
 
-    $("iframe:not('.h-sidebar-iframe')").each (i, iframe) =>
-      @_iframeAdded(iframe)
+    # $("iframe:not('.h-sidebar-iframe')").each (i, iframe) =>
+    #   @_iframeAdded(iframe)
 
   # THESIS TODO: Temporary solution
   _injectCSS: (iframe, href) ->

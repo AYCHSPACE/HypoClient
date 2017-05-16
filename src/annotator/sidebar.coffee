@@ -28,7 +28,9 @@ module.exports = class Sidebar extends Host
     this.hide()
 
     if options.openSidebar || options.annotations || options.query
-      @defaultGuest.on 'panelReady', => this.show()
+      # THESIS TODO: Would be nice to do @_bridge.on('panelReady', ...)
+      # requires modifying bridge to allow event registration post-init
+      @showSidebarImmediately = true;
 
     if @plugins.BucketBar?
       @plugins.BucketBar.element.on 'click', (event) => this.show()
@@ -40,7 +42,7 @@ module.exports = class Sidebar extends Host
     @onLoginRequest = options.services?[0]?.onLoginRequest
 
     this._setupSidebarEvents()
-    this._setupDocumentEvents()
+    # this._setupDocumentEvents()
 
   _setupDocumentEvents: ->
     sidebarTrigger(document.body, => this.show())
@@ -180,8 +182,7 @@ module.exports = class Sidebar extends Host
   isOpen: ->
     !@frame.hasClass('annotator-collapsed')
 
-  createAnnotation: (annotation = {}) ->
-    super
+  annotationCreated: (annotation = {}) ->
     this.show() unless annotation.$highlight
 
   showAnnotations: (annotations) ->
