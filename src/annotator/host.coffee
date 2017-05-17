@@ -8,7 +8,7 @@ module.exports = class Host
 
   plugins: {}
   guests: {}
-  anchors: {}
+  anchors: []
 
   constructor: (element, options) ->
     @element = $(element)
