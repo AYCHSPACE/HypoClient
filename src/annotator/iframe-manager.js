@@ -39,7 +39,7 @@ IFrameManager.prototype.addIFrame = function(iframe, uri) {
   $(iframe).mouseleave(function() {
     self._setActiveIFrame();
   });
-  this.eventEmitter.emit('iFrameAdded', iframe);
+  this.eventEmitter.emit('iFrameAdded', container);
 
   return container;
 }
@@ -55,11 +55,11 @@ IFrameManager.prototype.addIFrames = function(iframes, uri) {
 IFrameManager.prototype.removeIFrame = function(iframe) {
   var self = this;
   $.each(this.iframes, function (key, container) {
+    self.eventEmitter.emit('iFrameRemoved', container);
     if (container.iframe === iframe) delete self.iframes[key];
   });
 
   $(iframe).off('mouseenter mouseleave');
-  this.eventEmitter.emit('iFrameRemoved', iframe);
 }
 
 IFrameManager.prototype.destroy = function() {
@@ -123,11 +123,17 @@ IFrameManager.prototype.injectScript = function(iframe, scriptSrc, i) {
     iframe = iframes[i];
   }
 
-  var scriptTag = document.createElement('script');
-  scriptTag.src = scriptSrc;
-  scriptTag.type = "text/javascript";
+  var config = document.createElement('script');
+  config.className = "js-hypothesis-config";
+  config.type = "application/json";
+  config.innerText = ' {"constructor": "Guest" }';
 
-  iframe.contentDocument.body.appendChild(scriptTag);
+  var embed = document.createElement('script');
+  embed.async = true;
+  embed.src = scriptSrc;
+
+  iframe.contentDocument.body.appendChild(config);
+  iframe.contentDocument.body.appendChild(embed);
 
   if (iframes && i < iframes.length-1) {
     i++;

@@ -13,11 +13,12 @@ module.exports = class Host
   constructor: (element, options) ->
     @element = $(element)
     this.iFrameManager = new IFrameManager()
+    this.iFrameManager.on('iFrameAdded', @_addGuest.bind(this))
 
     this._bridge = new Bridge()
     uri = window.location.href
     # THESIS TODO: uri used as token for testing, find a real solution
-    token = uri
+    token = 'http://localhost:3000'
 
     this._setupBridgeEvents();
     this._bridge.createChannel(window, uri, token)
@@ -53,10 +54,12 @@ module.exports = class Host
 
     @app.appendTo(@frame)
 
-    @defaultGuest = @addGuest(element, options)
+    @defaultGuest = new Guest(element, options)
     @annotator = @defaultGuest
     iframes = this.iFrameManager.getIFrames()
-    this.addGuests(iframes, options)
+
+    for own key, container of iframes
+      @_addGuest(container)
 
     # THESIS TODO: Debugging only
     window.host = this
@@ -69,22 +72,6 @@ module.exports = class Host
       # Highlights are on by default.
       options.showHighlights = true
     @visibleHighlights = options.showHighlights
-
-  addGuest: (element, options) ->
-    options = options || {}
-
-    # If the passed in value is not an element, then get the element from the iFrame
-    if (element && element.iframe)
-      iframe = element.iframe
-      doc = iframe.contentDocument
-      element = doc.body
-      @iFrameManager.injectCss(iframe, 'inject.css')
-
-    guest = new Guest(element, options)
-
-  addGuests: (elements, options) ->
-    for own key, element of elements
-      @addGuest(element, options)
 
   addPlugin: (name, options) ->
     if @plugins[name]
@@ -105,6 +92,8 @@ module.exports = class Host
   destroy: ->
     @frame.remove()
 
+  destroyGuest: ->
+
   getGuestAnchors: ->
     anchors = []
     for uri, guest of @guests
@@ -120,12 +109,26 @@ module.exports = class Host
     # @anchors = @getGuestAnchors()
     # @plugins.BucketBar?.update()
 
+  _addGuest: (container) ->
+    iframe = container.iframe
+    uri = container.uri
+    source = iframe.contentWindow
+    # THESIS TODO: uri used as token for testing, find a real solution
+    token = 'http://localhost:3000'
+
+    this.iFrameManager.injectScript(iframe, 'http://localhost:3001/hypothesis')
+    this._bridge.createChannel(source, uri, token)
+
   _beforeAnnotationCreated: (annotation) ->
     # When a new non-highlight annotation is created, focus
     # the sidebar so that the text editor can be focused as
     # soon as the annotation card appears
     if !annotation.$highlight
       @app[0].contentWindow.focus()
+
+  # THESIS TODO: At some point, ensure guests are properly destroyed
+  # Eg. Destroy the channel in _bridge that links to a guest
+  _destroyGuest: (uri) ->
 
   _panelReady: ->
     # Initialize tool state.

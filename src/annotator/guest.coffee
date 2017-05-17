@@ -77,12 +77,12 @@ module.exports = class Guest extends Delegator
 
     this.adder = $(this.html.adder).appendTo(@element).hide()
     this._bridge = new Bridge()
-    this._setupBridgeEvents();
+    this._setupBridgeEvents()
 
-    uri = window.location.href
+    uri = window.location.href #'http://localhost:3000'
     # THESIS TODO: uri used as token for testing, find a real solution
-    token = uri
-    this._bridge.createChannel(window, uri, token)
+    token = 'http://localhost:3000'
+    this._bridge.createChannel(window.top, uri, token)
     
     self = this
     this.adderCtrl = new adder.Adder(@adder[0], {
