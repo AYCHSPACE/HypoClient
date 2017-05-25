@@ -150,7 +150,11 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       $rootScope.$broadcast('sidebarOpened');
     });
 
-    // These merely relay calls
+    // These merely relay calls from the Guest to the Host, and vise versa
+    bridge.on('beforeAnnotationCreated', function(annotations) {
+      bridge.call('beforeAnnotationCreated', annotations);
+    });
+
     bridge.on('showSidebar', function () {
       bridge.call('showSidebar');
     });
