@@ -335,7 +335,10 @@ module.exports = class Guest extends Delegator
     metadata = info.then(setDocumentInfo)
     targets = Promise.all([info, selectors]).then(setTargets)
 
-    targets.then(-> self.publish('beforeAnnotationCreated', [annotation]))
+    targets.then(-> 
+      self.crossframe.call('beforeAnnotationCreated', [annotation])
+      self.publish('beforeAnnotationCreated', [annotation])
+    )
     targets.then(-> self.anchor(annotation))
 
     @crossframe?.call('showSidebar') unless annotation.$highlight
@@ -356,7 +359,10 @@ module.exports = class Guest extends Delegator
 
     this.getDocumentInfo()
       .then(prepare)
-      .then(-> self.publish('beforeAnnotationCreated', [annotation]))
+      .then(->
+        self.crossframe.call('beforeAnnotationCreated', [annotation])
+        self.publish('beforeAnnotationCreated', [annotation])
+      )
 
     annotation
 
