@@ -19,6 +19,7 @@ if (window.wgxpath) {
 var $ = require('jquery');
 
 // Applications
+var Guest = require('./guest');
 var Sidebar = require('./sidebar');
 var PdfSidebar = require('./pdf-sidebar');
 
@@ -45,6 +46,8 @@ $.noConflict(true)(function() {
       Sidebar;
   if (options.hasOwnProperty('constructor')) {
     Klass = options.constructor;
+    if (Klass === "Guest") Klass = Guest;
+
     delete options.constructor;
   }
 
