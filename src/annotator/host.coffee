@@ -71,3 +71,9 @@ module.exports = class Host extends Guest
   destroy: ->
     @frame.remove()
     super
+
+  setAllVisibleHighlights: (shouldShowHighlights) ->
+    @crossframe.call('setVisibleHighlights', shouldShowHighlights)
+
+    # Lets Toolbar know about this event
+    this.publish 'setVisibleHighlights', shouldShowHighlights
