@@ -46,19 +46,23 @@ module.exports = class Host extends Guest
     .addClass('annotator-frame annotator-outer')
     .appendTo(element)
 
+    config.isDefaultFrame = true;
+
     super
 
     app.appendTo(@frame)
 
-    this.on 'panelReady', =>
+    @crossframe.on 'panelReady', (isDefaultFrame) =>
       # Initialize tool state.
       if config.showHighlights == undefined
         # Highlights are on by default.
         config.showHighlights = 'always'
-      this.setVisibleHighlights(config.showHighlights == 'always')
+      this.setAllVisibleHighlights(config.showHighlights == 'always')
 
-      # Show the UI
-      @frame.css('display', '')
+      if (isDefaultFrame)
+        # Show the UI
+        @frame.css('display', '')
+        this.publish('panelReady')
 
     @crossframe.on 'beforeAnnotationCreated', (annotations) =>
       annotation = annotations[0]

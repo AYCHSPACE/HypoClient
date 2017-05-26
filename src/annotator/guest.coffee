@@ -91,7 +91,10 @@ module.exports = class Guest extends Delegator
     this.addPlugin('CrossFrame', cfOptions)
     @crossframe = this.plugins.CrossFrame
 
-    @crossframe.onConnect(=> this.publish('panelReady'))
+    @isDefaultFrame = config.isDefaultFrame || false
+    @crossframe.onConnect(=>
+      @crossframe.call('panelReady', @isDefaultFrame)
+    )
     this._connectAnnotationSync(@crossframe)
     this._connectAnnotationUISync(@crossframe)
 
