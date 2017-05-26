@@ -28,3 +28,34 @@ try {
 } catch (err) {
   require('js-polyfills/url');
 }
+
+// Temporary console log monkey patch, tag with frame id
+var id = '';
+var token = '';
+var console = window.console;
+var loggersToPatch = ['debug', 'log', 'info', 'warn', 'error'];
+var originalConsoleLoggers = {};
+try {
+  id = window.location.href.replace(window.top.location.origin, '');
+} catch (ignored) {
+  id = window.location.href;
+}
+loggersToPatch.forEach(function (logger) {
+  originalConsoleLoggers[logger] = console[logger];
+});
+function patchLoggers () {
+  loggersToPatch.forEach(function (logger) {
+    console[logger] = originalConsoleLoggers[logger].bind(console, '[', id, document, token, ']\n');
+  });
+}
+patchLoggers();
+
+Object.defineProperty(window, '__h_discovery_token', {
+  get: function () {
+    return token;
+  },
+  set: function (value) {
+    token = value;
+    patchLoggers();
+  },
+});
