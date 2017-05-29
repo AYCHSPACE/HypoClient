@@ -77,13 +77,12 @@ module.exports = class CrossFrame extends Plugin
         for own key, node of addedNodes
           if (node.tagName == 'IFRAME' && node.className != 'h-sidebar-iframe')
             node.addEventListener 'load', ->
-              bridge.call('addedIFrame')
               _handleIFrame(node)
 
         # Remove iframes
         for own key, node of removedNodes
           if (node.tagName == 'IFRAME')
-            bridge.call('removedIFrame')
+            bridge.call('destroyFrame', node.src);
 
     _handleIFrame = (iframe) ->
       if !frameUtil.isAccessible(iframe) then return
