@@ -109,12 +109,24 @@ module.exports = class BucketBar extends Plugin
     below = []
 
     # Construct indicator points
-    points = @annotator.anchors.reduce (points, anchor, i) =>
-      unless anchor.highlights?.length
+    points = @annotator.allAnchors.reduce (points, anchor, i) =>
+      unless anchor.clientRect
         return points
 
-      rect = highlighter.getBoundingClientRect(anchor.highlights)
-      x = rect.top
+      rect = anchor.clientRect
+      top = rect.top
+
+      frameElement = anchor.frameElement
+
+      # If the highlight is within an iframe, then offset its position
+      if (frameElement)
+        frameOffset = frameElement.clientRect
+        if (rect.bottom > frameOffset.height) then top = frameOffset.height - rect.height
+        else if (rect.top < 0) then top = 0
+
+        top += frameOffset.top - document.body.scrollTop
+
+      x = top
       h = rect.bottom - rect.top
 
       if x < BUCKET_TOP_THRESHOLD
