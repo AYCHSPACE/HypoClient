@@ -148,6 +148,8 @@ AnnotationSync.prototype._tag = function(ann, tag) {
   tag = tag || window.btoa(Math.random());
   Object.defineProperty(ann, '$tag', {
     value: tag,
+    enumerable: true,
+    writable: false,
   });
   this.cache[tag] = ann;
   return ann;
