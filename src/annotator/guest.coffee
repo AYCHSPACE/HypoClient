@@ -103,6 +103,8 @@ module.exports = class Guest extends Delegator
       if not @plugins[name] and @options.pluginClasses[name]
         this.addPlugin(name, opts)
 
+    document.addEventListener('scroll', @onElementScroll.bind(this))
+
   addPlugin: (name, options) ->
     if @plugins[name]
       console.error("You cannot have more than one instance of any plugin.")
@@ -184,6 +186,9 @@ module.exports = class Guest extends Delegator
   anchor: (annotation) ->
     self = this
     root = @element[0]
+    # THESIS TODO: For the time being, ignore other annotations
+    # In the future, guests should never get annotations that don't belong to them
+    if (annotation.uri != window.location.href) then return
 
     # Anchors for all annotations are in the `anchors` instance property. These
     # are anchors for this annotation only. After all the targets have been
@@ -255,8 +260,11 @@ module.exports = class Guest extends Delegator
       self.anchors = self.anchors.concat(anchors)
 
       # Let plugins know about the new information.
-      self.plugins.BucketBar?.update()
       self.plugins.CrossFrame?.sync([annotation])
+
+      # THESIS TODO: The host needs to know about newly added anchors
+      # Come back to this at some point and consider alternative solutions
+      self.crossframe.call('updateAnchors', self._trimAnchors(self.anchors) )
 
       return anchors
 
@@ -303,7 +311,7 @@ module.exports = class Guest extends Delegator
     unhighlight = Array::concat(unhighlight...)
     raf =>
       highlighter.removeHighlights(unhighlight)
-      this.plugins.BucketBar?.update()
+      @crossframe.call('updateAnchors', @_trimAnchors(@anchors) ) 
 
   createAnnotation: (annotation = {}) ->
     self = this
@@ -426,6 +434,21 @@ module.exports = class Guest extends Delegator
       .removeClass('h-icon-annotate')
       .addClass('h-icon-note');
 
+  # THESIS TODO: Take a look at this when optimizing
+  _trimAnchors: (anchors) ->
+    # Strips out information that can't be sent via PostMessage
+    self = self
+    trimmed = []
+    anchor = {}
+    for a in anchors
+      anchor = Object.assign({}, a) # Clone this, to avoid modifying our anchors
+      if anchor.highlights then delete anchor.highlights
+      if anchor.range then delete anchor.range
+
+      trimmed.push(anchor)
+
+    return trimmed
+
   selectAnnotations: (annotations, toggle) ->
     if toggle
       this.toggleAnnotationSelection annotations
@@ -444,6 +467,9 @@ module.exports = class Guest extends Delegator
     # make up for the lack of click support for all elements.
     if !@selectedTargets?.length
       @crossframe?.call('hideSidebar')
+
+  onElementScroll: (event) ->
+    @crossframe.call('updateAnchors', @_trimAnchors(@anchors) )
 
   onHighlightMouseover: (event) ->
     return unless @visibleHighlights
