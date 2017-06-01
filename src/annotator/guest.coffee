@@ -240,6 +240,11 @@ module.exports = class Guest extends Delegator
 
         $(highlights).data('annotation', anchor.annotation)
         anchor.highlights = highlights
+        anchor.clientRect = highlighter.getBoundingClientRectAsObject(highlights)
+        if (window.frameElement)
+          anchor.frameElement = {}
+          anchor.frameElement.clientRect = highlighter.getBoundingClientRectAsObject([window.frameElement])
+
         return anchor
 
     sync = (anchors) ->
@@ -473,6 +478,13 @@ module.exports = class Guest extends Delegator
       @crossframe?.call('hideSidebar')
 
   onElementScroll: (event) ->
+    for anchor in @anchors
+      if anchor.highlights
+        anchor.clientRect = highlighter.getBoundingClientRectAsObject(anchor.highlights)
+        if (window.frameElement)
+          anchor.frameElement = {}
+          anchor.frameElement.clientRect = highlighter.getBoundingClientRectAsObject([window.frameElement])
+
     @crossframe.call('updateAnchors', @_trimAnchors(@anchors) )
 
   onHighlightMouseover: (event) ->

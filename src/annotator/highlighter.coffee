@@ -42,3 +42,11 @@ exports.getBoundingClientRect = (collection) ->
     left: Math.min(acc.left, r.left)
     bottom: Math.max(acc.bottom, r.bottom)
     right: Math.max(acc.right, r.right)
+
+exports.getBoundingClientRectAsObject = (collection) ->
+  rect = @getBoundingClientRect(collection)
+  result = {}
+  for key, prop of rect
+    result[key] = prop
+
+  return result
