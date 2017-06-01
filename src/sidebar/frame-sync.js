@@ -174,6 +174,10 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     bridge.on('hideSidebar', function () {
       bridge.call('hideSidebar');
     });
+
+    bridge.on('updateAnchors', function(anchors) {
+      bridge.call('updateAnchors', anchors);
+    });
   }
 
   /**

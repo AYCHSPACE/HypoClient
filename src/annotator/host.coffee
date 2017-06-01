@@ -4,6 +4,8 @@ Guest = require('./guest')
 
 module.exports = class Host extends Guest
   constructor: (element, config) ->
+    @allAnchors = []
+    @anchorsByUri = {}
 
     # Some config settings are not JSON-stringifiable (e.g. JavaScript
     # functions) and will be omitted when the config is JSON-stringified.
@@ -72,6 +74,9 @@ module.exports = class Host extends Guest
       if !annotation.$highlight
         app[0].contentWindow.focus()
 
+    @crossframe.on 'updateAnchors', (anchors) =>
+      @_updateAnchors(anchors)
+
   destroy: ->
     @frame.remove()
     super
@@ -81,3 +86,17 @@ module.exports = class Host extends Guest
 
     # Lets Toolbar know about this event
     this.publish 'setVisibleHighlights', shouldShowHighlights
+
+  _updateAnchors: (anchors) ->
+    uri = anchors[0].annotation.uri
+    this.anchorsByUri[uri] = anchors
+
+    # THESIS TODO: Come back to this at some point
+    # For now, just refresh allAnchors every time
+    @_refreshAllAnchors()
+    @plugins.BucketBar?.update()
+
+  _refreshAllAnchors: ->
+    @allAnchors = []
+    for own key, anchors of @anchorsByUri
+      @allAnchors = @allAnchors.concat(anchors)
