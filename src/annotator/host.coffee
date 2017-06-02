@@ -94,7 +94,9 @@ module.exports = class Host extends Guest
     this.publish 'setVisibleHighlights', shouldShowHighlights
 
   _updateAnchors: (anchors) ->
-    uri = anchors[0].annotation.uri
+    uri = anchors[0] && anchors[0].annotation.uri
+    if !uri then return
+
     this.anchorsByUri[uri] = anchors
 
     # THESIS TODO: Come back to this at some point
