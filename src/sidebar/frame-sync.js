@@ -167,6 +167,10 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       bridge.call('panelReady', isDefaultFrame);
     });
 
+    bridge.on('scrollToAnnotation', function (tag) {
+      bridge.call('scrollToAnnotation', tag);
+    });
+
     bridge.on('setVisibleHighlights', function (state) {
       bridge.call('setVisibleHighlights', state);
     });
