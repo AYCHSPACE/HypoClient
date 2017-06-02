@@ -16,11 +16,11 @@ BUCKET_TOP_THRESHOLD = 115 + BUCKET_NAV_SIZE  # Toolbar
 scrollToClosest = (anchors, direction) ->
   dir = if direction is "up" then +1 else -1
   {next} = anchors.reduce (acc, anchor) ->
-    unless anchor.highlights?.length
+    unless anchor.clientRect
       return acc
 
     {start, next} = acc
-    rect = highlighter.getBoundingClientRect(anchor.highlights)
+    rect = anchor.clientRect
 
     # Ignore if it's not in the right direction.
     if (dir is 1 and rect.top >= BUCKET_TOP_THRESHOLD)
@@ -39,7 +39,7 @@ scrollToClosest = (anchors, direction) ->
         acc
   , {}
 
-  scrollIntoView(next.highlights[0])
+  annotator.scrollToAnnotation(next.annotation.$tag)
 
 
 module.exports = class BucketBar extends Plugin
@@ -76,15 +76,12 @@ module.exports = class BucketBar extends Plugin
     else
       $(element).append @element
 
+  # THESIS TODO: See what scrollable's are, and if subframes can have them
   pluginInit: ->
-    $(window).on 'resize scroll', @update
-
     for scrollable in @options.scrollables ? []
       $(scrollable).on 'resize scroll', @update
 
   destroy: ->
-    $(window).off 'resize scroll', @update
-
     for scrollable in @options.scrollables ? []
       $(scrollable).off 'resize scroll', @update
 
