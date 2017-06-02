@@ -81,6 +81,9 @@ module.exports = class Host extends Guest
     @frame.remove()
     super
 
+  focusGuestAnnotations: (tags, toggle) ->
+    @crossframe.call('focusGuestAnnotations', tags, toggle)
+
   setAllVisibleHighlights: (shouldShowHighlights) ->
     @crossframe.call('setVisibleHighlights', shouldShowHighlights)
 

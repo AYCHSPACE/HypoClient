@@ -150,10 +150,13 @@ module.exports = class Guest extends Delegator
         this.anchor(annotation)
 
   _connectAnnotationUISync: (crossframe) ->
-    crossframe.on 'focusAnnotations', (tags=[]) =>
+    crossframe.on 'focusGuestAnnotations', (tags=[], toggle) =>
       for anchor in @anchors when anchor.highlights?
-        toggle = anchor.annotation.$tag in tags
-        $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
+        hasTag = anchor.annotation.$tag in tags
+        # Use toggle if it's set, and if it's among the specified tags
+        state = if hasTag && toggle != undefined then toggle else hasTag
+
+        $(anchor.highlights).toggleClass('annotator-hl-focused', state)
 
     crossframe.on 'scrollToAnnotation', (tag) =>
       for anchor in @anchors when anchor.highlights?
