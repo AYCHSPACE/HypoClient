@@ -191,7 +191,7 @@ module.exports = class Guest extends Delegator
     root = @element[0]
     # THESIS TODO: For the time being, ignore other annotations
     # In the future, guests should never get annotations that don't belong to them
-    if (annotation.uri != window.location.href) then return
+    if (annotation.uri != decodeURIComponent(window.location.href)) then return
 
     # Anchors for all annotations are in the `anchors` instance property. These
     # are anchors for this annotation only. After all the targets have been
