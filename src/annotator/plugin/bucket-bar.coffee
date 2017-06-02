@@ -238,17 +238,28 @@ module.exports = class BucketBar extends Plugin
 
       # Focus corresponding highlights bucket when mouse is hovered
       # TODO: This should use event delegation on the container.
-      .on 'mousemove', (event) =>
+      # 
+      # THESIS TODO: mousemove changed to mouseenter, and mouseout changed to mouseleave
+      # Make sure this doesn't break anything
+      # Eg. test with an ipad
+      .on 'mouseenter', (event) =>
         bucket = @tabs.index(event.currentTarget)
-        for anchor in @annotator.anchors
-          toggle = anchor in @buckets[bucket]
-          $(anchor.highlights).toggleClass('annotator-hl-focused', toggle)
+        tags = []
+        for anchor in @buckets[bucket]
+          tag = anchor.annotation.$tag
+          if tag then tags.push(tag)
+
+        annotator.focusGuestAnnotations(tags, true)
 
       # Gets rid of them after
-      .on 'mouseout', (event) =>
+      .on 'mouseleave', (event) =>  
         bucket = @tabs.index(event.currentTarget)
+        tags = []
         for anchor in @buckets[bucket]
-          $(anchor.highlights).removeClass('annotator-hl-focused')
+          tag = anchor.annotation.$tag
+          if tag then tags.push(tag)
+
+        annotator.focusGuestAnnotations(tags, false)
 
       # Does one of a few things when a tab is clicked depending on type
       .on 'click', (event) =>
