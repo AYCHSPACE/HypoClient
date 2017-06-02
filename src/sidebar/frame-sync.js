@@ -159,6 +159,10 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       bridge.call('beforeAnnotationCreated', annotations);
     });
 
+    bridge.on('focusGuestAnnotations', function(tags, toggle) {
+      bridge.call('focusGuestAnnotations', tags, toggle);
+    });
+
     bridge.on('panelReady', function (isDefaultFrame) {
       bridge.call('panelReady', isDefaultFrame);
     });
@@ -234,8 +238,8 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
    *
    * @param {string[]} tags
    */
-  this.focusAnnotations = function (tags) {
-    bridge.call('focusAnnotations', tags);
+  this.focusAnnotations = function (tags, toggle) {
+    bridge.call('focusGuestAnnotations', tags, toggle);
   };
 
   /**
