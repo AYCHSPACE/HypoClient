@@ -28,6 +28,11 @@ module.exports = class Document extends Plugin
     for link in @metadata.link
       if link.rel == "canonical"
         uri = link.href
+
+    if (this._isBlob(uri))
+      dataSet = window.frameElement && window.frameElement.dataset
+      if (dataSet && dataSet.src) then uri = decodeURIComponent dataSet.src
+
     return uri
 
 # returns all uris for the document being annotated
@@ -161,6 +166,9 @@ module.exports = class Document extends Plugin
     for link in $("link")
       if $(link).prop("rel") in ["shortcut icon", "icon"]
         @metadata["favicon"] = this._absoluteUrl(link.href)
+
+  _isBlob: (uri) ->
+    return uri.includes('blob:')
 
 # hack to get a absolute url from a possibly relative one
 
