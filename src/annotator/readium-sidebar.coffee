@@ -1,15 +1,7 @@
-Sidebar = require('./sidebar')
+EpubSidebar = require('./epub-sidebar')
 
 
-module.exports = class ReadiumSidebar extends Sidebar
-  options:
-    Document: {}
-    TextSelection: {}
-    BucketBar:
-      container: '.annotator-frame'
-    Toolbar:
-      container: '.annotator-frame'
-
+module.exports = class ReadiumSidebar extends EpubSidebar
   constructor: (element, options) ->
     ReadiumSDK = window.ReadiumSDK
     super

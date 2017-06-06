@@ -24,6 +24,7 @@ var Guest = require('./guest');
 var Sidebar = require('./sidebar');
 var PdfSidebar = require('./pdf-sidebar');
 var ReadiumSidebar = require('./readium-sidebar');
+var EpubSidebar = require('./epub-sidebar');
 
 var pluginClasses = {
   // UI plugins
@@ -31,6 +32,7 @@ var pluginClasses = {
   Toolbar: require('./plugin/toolbar'),
 
   // Document type plugins
+  EPUB: require('./plugin/epub'),
   PDF: require('./plugin/pdf'),
   Document: require('./plugin/document'),
 
