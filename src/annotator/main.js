@@ -48,8 +48,6 @@ $.noConflict(true)(function() {
 
   if (config.hasOwnProperty('constructor')) {
     Klass = config.constructor;
-    if (Klass === "Guest") Klass = Guest;
-
     delete config.constructor;
   }
 
