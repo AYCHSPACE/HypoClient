@@ -8,6 +8,6 @@ module.exports = class ReadiumSidebar extends EpubSidebar
 
     ReadiumSDK.once(ReadiumSDK.Events.READER_INITIALIZED, (readium) =>
       readium.on(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, ($iframe, spineItem) =>
-        @crossframe.discoverOwnFrames()
+        # @crossframe.discoverOwnFrames()
       )
     )
