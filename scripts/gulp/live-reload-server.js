@@ -18,7 +18,6 @@ function changelogText() {
   return fs.readFileSync('./CHANGELOG.md', 'utf-8');
 }
 
-
 /**
  * @typedef Config
  * @property {string} clientUrl - The URL of the client's boot script
@@ -71,6 +70,16 @@ function LiveReloadServer(port, config) {
           </html>
         `;
       } else {
+        var multiFrameContent = config.enableMultiFrameSupport ? `
+          <div style="margin: 10px 0 0 75px;">
+            <button id="add-test" style="padding: 0.6em; font-size: 0.75em">Toggle 2nd Frame</button>
+          </div>
+          <div style="margin: 10px 0 0 75px;">
+            <iframe id="iframe1" src="/document/license" style="width: 50%;height: 300px;"></iframe>
+          </div>
+          <div id="iframe2-container" style="margin: 10px 0 0 75px;">
+          </div>` : '';
+
         content = `
           <html>
           <head>
@@ -82,15 +91,7 @@ function LiveReloadServer(port, config) {
               Number of annotations:
               <span data-hypothesis-annotation-count>...</span>
             </div>
-            <div style="margin: 10px 0 0 75px;">
-              <button id="add-test" style="padding: 0.6em; font-size: 0.75em">Toggle 2nd Frame</button>
-            </div>
-            <div style="margin: 10px 0 0 75px;">
-              <iframe id="iframe1" src="/document/license" style="width: 50%;height: 300px;"></iframe>
-            </div>
-            <div id="iframe2-container" style="margin: 10px 0 0 75px;">
-              <!--<iframe src="/document/changelog" style="width: 50%;height: 300px;"></iframe>-->
-            </div>
+            ${multiFrameContent}
             <pre style="margin: 20px 75px 75px 75px;">${readmeText()}</pre>
             <script>
             var appHost = document.location.hostname;
@@ -101,6 +102,10 @@ function LiveReloadServer(port, config) {
       
                 // Open the sidebar when the page loads
                 openSidebar: true,
+                
+                // Needed for multi frame support
+                enableMultiFrameSupport: ${config.enableMultiFrameSupport},
+                embedScriptUrl: '${config.clientUrl}'
               };
             };
       
@@ -119,11 +124,10 @@ function LiveReloadServer(port, config) {
               if (!iframeIsAdded) {
                 var iframe1 = document.querySelector('#iframe1');
                 var iframeNew = iframe1.cloneNode();
-                iframeNew.src = "/document/changelog";
+                iframeNew.srcdoc = "/document/changelog";
                 iframeNew.id = "iframe2";
                 iframeIsAdded = true;
                 document.querySelector('#iframe2-container').appendChild(iframeNew);
-                annotator._iframeAdded(iframeNew);
               } else {
                 var iframe2 = document.querySelector('#iframe2');
                 iframe2.parentNode.removeChild(iframe2);
