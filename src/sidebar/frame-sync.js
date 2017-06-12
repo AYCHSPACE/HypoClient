@@ -54,7 +54,6 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     var prevFrames = [];
     var prevPublicAnns = 0;
 
-    var frames = annotationUI.frames();
 
     annotationUI.subscribe(function () {
       var state = annotationUI.getState();
@@ -66,6 +65,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       var publicAnns = 0;
       var inSidebar = new Set();
       var addedByUri = {};
+      var frames = annotationUI.frames();
 
       state.annotations.forEach(function (annot) {
         var uri = annot.uri;
@@ -98,14 +98,25 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       if (Object.keys(addedByUri).length > 0) {
         Object.keys(addedByUri).forEach(function(key) {
           var added = addedByUri[key];
-          bridge.call('loadAnnotations', added.map(formatAnnot));
+          var channelUri = added[0].uri;
+          bridge.call({
+            method: 'loadAnnotations',
+            scope: [channelUri],
+          }, added.map(formatAnnot));
+
           added.forEach(function (annot) {
             inFrame.add(annot.$tag);
           });
         });
       }
+
       deleted.forEach(function (annot) {
-        bridge.call('deleteAnnotation', formatAnnot(annot));
+        var channelUri = annot.uri;
+        bridge.call({
+          method: 'deleteAnnotation',
+          scope: [channelUri],
+        }, formatAnnot(annot));
+
         inFrame.delete(annot.$tag);
       });
 
