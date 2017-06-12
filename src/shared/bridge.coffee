@@ -21,7 +21,7 @@ module.exports = class Bridge
     for link in @links
       link.channel.destroy()
 
-  createChannel: (source, origin, token) ->
+  createChannel: (source, origin, token, uri) ->
     channel = null
     connected = false
 
@@ -39,7 +39,7 @@ module.exports = class Bridge
     listeners = extend({connect}, @channelListeners)
 
     # Set up a channel
-    channel = new RPC(window, source, origin, listeners)
+    channel = new RPC(window, source, origin, listeners, uri)
 
     # Fire off a connection attempt
     channel.call('connect', token, ready)
@@ -62,6 +62,13 @@ module.exports = class Bridge
       cb = args[args.length - 1]
       args = args.slice(0, -1)
 
+    # THESIS TODO: See if there are better solutions
+    else if args[args.length - 1] && args[args.length - 1].channelUri
+      uri = args[args.length - 1].channelUri
+      cb = args[args.length - 1].callback
+      args = args.slice(0, -1)
+
+
     _makeDestroyFn = (c) =>
       (error) =>
         c.destroy()
@@ -69,6 +76,9 @@ module.exports = class Bridge
         throw error
 
     promises = @links.map (l) ->
+      if uri && l.channel.uri != uri
+        return
+
       p = new Promise (resolve, reject) ->
         timeout = setTimeout((-> resolve(null)), 1000)
         try
