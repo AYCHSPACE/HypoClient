@@ -95,10 +95,6 @@ function SidebarContentController(
 
   var searchClients = [];
 
-  function _resetAnnotations() {
-    annotationMapper.unloadAnnotations(annotationUI.savedAnnotations());
-  }
-
   function _loadAnnotationsFor(uris, group) {
     var searchClient = new SearchClient(store.search, {
       // If no group is specified, we are fetching annotations from
@@ -166,8 +162,6 @@ function SidebarContentController(
    * Load annotations for all URLs associated with `frames`.
    */
   function loadAnnotations() {
-    _resetAnnotations();
-
     searchClients.forEach(function (client) {
       client.cancel();
     });
