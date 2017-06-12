@@ -263,6 +263,8 @@ function addAnnotations(annotations, now) {
       annotations: annotations,
     });
 
+    annotationUI.addFrameAnnotations(getState().annotations);
+
     if (!getState().isSidebar) {
       return;
     }

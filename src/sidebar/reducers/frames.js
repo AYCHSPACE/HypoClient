@@ -10,6 +10,23 @@ function init() {
 }
 
 var update = {
+  ADD_FRAME_ANNOTATIONS: function (state, action) {
+    var annotationsByUri = {};
+
+    var frames = state.frames.map(function (frame) {
+      var uri = frame.uri;
+
+      var annotations = action.annotations.filter(function(annotation) {
+        return annotation.uri === uri;
+      });
+
+      frame.annotations = annotations;
+      return frame;
+    });
+
+    return {frames: frames};
+  },
+
   CONNECT_FRAME: function (state, action) {
     return {frames: state.frames.concat(action.frame)};
   },
@@ -40,6 +57,13 @@ var update = {
 };
 
 var actions = util.actionTypes(update);
+
+/**
+ * Add the annotations to their respective frames
+ */
+function addFrameAnnotations(annotations) {
+  return {type: actions.ADD_FRAME_ANNOTATIONS, annotations: annotations};
+}
 
 /**
  * Add a frame to the list of frames currently connected to the sidebar app.
@@ -78,6 +102,7 @@ module.exports = {
   update: update,
 
   actions: {
+    addFrameAnnotations: addFrameAnnotations,
     connectFrame: connectFrame,
     destroyFrame: destroyFrame,
     updateFrameAnnotationFetchStatus: updateFrameAnnotationFetchStatus,
