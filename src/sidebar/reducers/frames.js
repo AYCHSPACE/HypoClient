@@ -13,6 +13,22 @@ function init() {
 }
 
 var update = {
+
+  UPDATE_FRAME_ANNOTATIONS: function (state, action) {
+    var frames = state.frames.map(function (frame) {
+      var uri = frame.uri;
+
+      var annotations = action.annotations.filter(function(annotation) {
+        return annotation.uri === uri;
+      });
+
+      frame.annotations = annotations;
+      return frame;
+    });
+
+    return {frames: frames};
+  },
+
   CONNECT_FRAME: function (state, action) {
     return {frames: state.frames.concat(action.frame)};
   },
@@ -56,6 +72,13 @@ function connectFrame(frame) {
  */
 function destroyFrame(frame) {
   return {type: actions.DESTROY_FRAME, frame: frame};
+}
+
+/**
+ * Add the annotations to their respective frames
+ */
+function updateFrameAnnotations(annotations) {
+  return {type: actions.UPDATE_FRAME_ANNOTATIONS, annotations: annotations};
 }
 
 /**
@@ -114,6 +137,7 @@ module.exports = {
   update: update,
 
   actions: {
+    updateFrameAnnotations: updateFrameAnnotations,
     connectFrame: connectFrame,
     destroyFrame: destroyFrame,
     updateFrameAnnotationFetchStatus: updateFrameAnnotationFetchStatus,
