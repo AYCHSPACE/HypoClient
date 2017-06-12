@@ -98,14 +98,21 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       if (Object.keys(addedByUri).length > 0) {
         Object.keys(addedByUri).forEach(function(key) {
           var added = addedByUri[key];
-          bridge.call('loadAnnotations', added.map(formatAnnot));
+          var channelUri = added[0].uri;
+          bridge.call('loadAnnotations', added.map(formatAnnot), {
+            channelUri: channelUri,
+          });
           added.forEach(function (annot) {
             inFrame.add(annot.$tag);
           });
         });
       }
+
       deleted.forEach(function (annot) {
-        bridge.call('deleteAnnotation', formatAnnot(annot));
+        var channelUri = annot.uri;
+        bridge.call('deleteAnnotation', formatAnnot(annot), {
+          channelUri: channelUri,
+        });
         inFrame.delete(annot.$tag);
       });
 
