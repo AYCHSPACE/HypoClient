@@ -76,6 +76,17 @@ function connectFrame(frame) {
  * Remove a frame from the list of frames currently connected to the sidebar app.
  */
 function destroyFrame(frame) {
+  var annots = frame.annotations;
+  var frames = annotationUI.frames().filter(function(f) {
+    return f.uri === frame.uri;
+  });
+
+  // If two frames share the same uri then don't delete the annotations, because
+  // in that scenario we can't figure out which annotation belongs to which frame.
+  if (Object.keys(frames).length === 1) {
+    annotationUI.removeAnnotations(annots);
+  }
+
   return {type: actions.DESTROY_FRAME, frame: frame};
 }
 
