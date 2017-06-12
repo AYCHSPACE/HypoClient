@@ -68,7 +68,7 @@ module.exports = class CrossFrame extends Plugin
       _discoverOwnFrames()
 
       # Listen for DOM mutations, to know when frames are added / removed
-      observer = new MutationObserver(debounce(_discoverOwnFrames, 300))
+      observer = new MutationObserver(debounce(_discoverOwnFrames, 300, leading: true))
       observer.observe(elem, {childList: true, subtree: true});
 
     _discoverOwnFrames = ->
@@ -90,10 +90,7 @@ module.exports = class CrossFrame extends Plugin
 
     _handleFrame = (frame) ->
       if !FrameUtil.isAccessible(frame) then return
-      if frame.contentDocument.readyState != 'complete'
-        frame.addEventListener 'load', ->
-          _injectToFrame(frame)
-      else
+      FrameUtil.isLoaded frame, () ->
         _injectToFrame(frame)
 
     _iframeUnloaded = (frame) ->

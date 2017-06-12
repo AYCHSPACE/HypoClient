@@ -20,6 +20,7 @@ function injectHypothesis (iframe, scriptUrl) {
 
   var src = scriptUrl;
   var embed = document.createElement('script');
+  embed.className = 'js-hypothesis-embed';
   embed.async = true;
   embed.src = src;
 
@@ -42,10 +43,21 @@ function isValid (iframe) {
   return iframe.className !== 'h-sidebar-iframe';
 }
 
+function isLoaded (iframe, callback) {
+  if (iframe.contentDocument.readyState !== 'complete') {
+    iframe.addEventListener('load', function () {
+      callback();
+    });
+  } else {
+    callback();
+  }
+}
+
 module.exports = {
   findFrames: findFrames,
   hasHypothesis: hasHypothesis,
   injectHypothesis: injectHypothesis,
   isAccessible: isAccessible,
   isValid: isValid,
+  isLoaded: isLoaded,
 };
