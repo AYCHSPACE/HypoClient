@@ -141,6 +141,9 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
 
     bridge.on('destroyFrame', function (uri) {
       destroyFrame(uri);
+
+      // THESIS TODO: It would be good to only target the default frame
+      bridge.call('removeAnchors', uri);
     });
 
     // Anchoring an annotation in the frame completed

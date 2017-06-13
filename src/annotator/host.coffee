@@ -74,6 +74,10 @@ module.exports = class Host extends Guest
       if !annotation.$highlight
         app[0].contentWindow.focus()
 
+    @crossframe.on 'removeAnchors', (value) =>
+      if typeof value == 'string'
+        @_removeAnchorsByUri(value)
+
     @crossframe.on 'updateAnchors', (anchors) =>
       @_updateAnchors(anchors)
 
@@ -93,6 +97,12 @@ module.exports = class Host extends Guest
     # Lets Toolbar know about this event
     this.publish 'setVisibleHighlights', shouldShowHighlights
 
+  _removeAnchorsByUri: (uri) ->
+    if @anchorsByUri[uri]
+      delete @anchorsByUri[uri]
+
+      @_refreshAllAnchors()
+
   _updateAnchors: (anchors) ->
     uri = anchors[0] && anchors[0].annotation.uri
     if !uri then return
@@ -102,9 +112,10 @@ module.exports = class Host extends Guest
     # THESIS TODO: Come back to this at some point
     # For now, just refresh allAnchors every time
     @_refreshAllAnchors()
-    @plugins.BucketBar?.update()
 
   _refreshAllAnchors: ->
     @allAnchors = []
     for own key, anchors of @anchorsByUri
       @allAnchors = @allAnchors.concat(anchors)
+
+    @plugins.BucketBar?.update()
