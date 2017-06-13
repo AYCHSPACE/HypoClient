@@ -99,9 +99,11 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
         Object.keys(addedByUri).forEach(function(key) {
           var added = addedByUri[key];
           var channelUri = added[0].uri;
-          bridge.call('loadAnnotations', added.map(formatAnnot), {
-            channelUri: channelUri,
-          });
+          bridge.call({
+            method: 'loadAnnotations',
+            scope: [channelUri],
+          }, added.map(formatAnnot));
+
           added.forEach(function (annot) {
             inFrame.add(annot.$tag);
           });
@@ -110,9 +112,11 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
 
       deleted.forEach(function (annot) {
         var channelUri = annot.uri;
-        bridge.call('deleteAnnotation', formatAnnot(annot), {
-          channelUri: channelUri,
-        });
+        bridge.call({
+          method: 'deleteAnnotation',
+          scope: [channelUri],
+        }, formatAnnot(annot));
+
         inFrame.delete(annot.$tag);
       });
 

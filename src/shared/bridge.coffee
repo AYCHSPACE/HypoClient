@@ -58,16 +58,15 @@ module.exports = class Bridge
   # - callback: (optional) called with error, if any, and an Array of results
   call: (method, args...) ->
     cb = null
-    if typeof(args[args.length - 1]) is 'function'
-      cb = args[args.length - 1]
+    lastParam = args[args.length - 1]
+    if typeof(lastParam) is 'function'
+      cb = lastParam
       args = args.slice(0, -1)
 
-    # THESIS TODO: See if there are better solutions
-    else if args[args.length - 1] && args[args.length - 1].channelUri
-      uri = args[args.length - 1].channelUri
-      cb = args[args.length - 1].callback
-      args = args.slice(0, -1)
-
+    firstParam = method
+    if typeof(firstParam) is 'object'
+      method = firstParam.method
+      scope = new Set( firstParam.scope )
 
     _makeDestroyFn = (c) =>
       (error) =>
@@ -76,7 +75,7 @@ module.exports = class Bridge
         throw error
 
     promises = @links.map (l) ->
-      if uri && l.channel.uri != uri
+      if scope && !scope.has(l.channel.uri)
         return
 
       p = new Promise (resolve, reject) ->
