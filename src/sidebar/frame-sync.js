@@ -54,7 +54,6 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     var prevFrames = [];
     var prevPublicAnns = 0;
 
-    var frames = annotationUI.frames();
 
     annotationUI.subscribe(function () {
       var state = annotationUI.getState();
@@ -66,6 +65,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       var publicAnns = 0;
       var inSidebar = new Set();
       var addedByUri = {};
+      var frames = annotationUI.frames();
 
       state.annotations.forEach(function (annot) {
         var uri = annot.uri;
