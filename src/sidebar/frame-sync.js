@@ -260,10 +260,15 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
         return;
       }
 
-      annotationUI.connectFrame({
+      var frame = {
         metadata: info.metadata,
         uri: info.uri,
-      });
+        parentUri: channel.parentUri || null,
+        childUris: [],
+      };
+
+      annotationUI.connectFrame(frame);
+      annotationUI.addToParent(frame);
     });
   }
 
@@ -283,6 +288,9 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       if (Object.keys(frames).length === 1 && annots) {
         annotationUI.removeAnnotations(annots);
       }
+
+      // Remove the child from the parent
+      annotationUI.removeFromParent(frameToDestroy);
       annotationUI.destroyFrame(frameToDestroy);
     }
   }
