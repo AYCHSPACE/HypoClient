@@ -81,10 +81,12 @@ module.exports = class Guest extends Delegator
 
     this.plugins = {}
     this.anchors = []
+    this.parentUri = config.parentUri || null
 
     cfOptions =
       enableMultiFrameSupport: config.enableMultiFrameSupport
       embedScriptUrl: config.embedScriptUrl
+      parentUri: this.parentUri
       on: (event, handler) =>
         this.subscribe(event, handler)
       emit: (event, args...) =>
