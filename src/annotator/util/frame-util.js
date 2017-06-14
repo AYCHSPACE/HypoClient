@@ -12,13 +12,20 @@ function hasHypothesis (iframe) {
 }
 
 // Inject embed.js into the iframe
-function injectHypothesis (iframe, scriptUrl) {
+function injectHypothesis (iframe, options) {
+
   var config = document.createElement('script');
   config.className = 'js-hypothesis-config';
   config.type = 'application/json';
-  config.innerText = '{"enableMultiFrameSupport": true, "subFrameInstance": true}';
 
-  var src = scriptUrl;
+  var configData = {
+    enableMultiFrameSupport: true,
+    parentUri: options.parentUri,
+    subFrameInstance: true,
+  }
+  config.innerText = JSON.stringify(configData);
+
+  var src = options.embedScriptUrl;
   var embed = document.createElement('script');
   embed.className = 'js-hypothesis-embed';
   embed.async = true;

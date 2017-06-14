@@ -28,7 +28,7 @@ module.exports = class CrossFrame extends Plugin
   constructor: (elem, options) ->
     super
 
-    opts = extract(options, 'server')
+    opts = extract(options, 'server', 'parentUri')
     discovery = new Discovery(window, opts)
 
     bridge = new Bridge()
@@ -38,11 +38,14 @@ module.exports = class CrossFrame extends Plugin
 
     handledFrames = []
 
+    annotator = null
+
     this.pluginInit = ->
       onDiscoveryCallback = (source, origin, token) ->
         bridge.createChannel(source, origin, token)
       discovery.startDiscovery(onDiscoveryCallback)
 
+      annotator = this.annotator
       if options.enableMultiFrameSupport
         _setupFrameDetection()
 
@@ -84,7 +87,15 @@ module.exports = class CrossFrame extends Plugin
 
     _injectToFrame = (frame) ->
       if !FrameUtil.hasHypothesis(frame)
-        FrameUtil.injectHypothesis(frame, options.embedScriptUrl)
+        # THESIS TODO: Come back to this at some point
+        uri = annotator.getDocumentInfo()
+        .then (info) ->
+          uri = info.uri
+          FrameUtil.injectHypothesis(frame,
+            embedScriptUrl: options.embedScriptUrl
+            parentUri: uri
+          )
+
         frame.contentWindow.addEventListener 'unload', ->
           _iframeUnloaded(frame)
 

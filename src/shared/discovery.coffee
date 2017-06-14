@@ -36,6 +36,7 @@ module.exports = class Discovery
   constructor: (@target, options={}) ->
     @server = options.server if options.server
     @origin = options.origin if options.origin
+    @parentUri = options.parentUri
 
   startDiscovery: (onDiscovery) ->
     if @onDiscovery
@@ -89,6 +90,7 @@ module.exports = class Discovery
     uri = null
     if (data.type)
       uri = data.uri
+      parentUri = data.parentUri
       data = data.type
 
     # If `origin` is 'null' the source frame is a file URL or loaded over some
@@ -118,12 +120,13 @@ module.exports = class Discovery
     if reply
       message =
         type: '__cross_frame_dhcp_' + reply
-        uri: window.location.href # THESIS TODO: Get this from Document plugin (or similar plugin)
+        parentUri: this.parentUri
+        uri: annotator?.getUri() || window.location.href
 
       source.postMessage message, origin
 
     if discovered
-      @onDiscovery.call(null, source, origin, token, uri)
+      @onDiscovery.call(null, source, origin, token, uri, parentUri)
 
     return
 
