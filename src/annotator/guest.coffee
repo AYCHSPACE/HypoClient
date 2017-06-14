@@ -107,6 +107,12 @@ module.exports = class Guest extends Delegator
       if not @plugins[name] and @options.pluginClasses[name]
         this.addPlugin(name, opts)
 
+    this.uri;
+    this.getDocumentInfo()
+    .then((info) => 
+      this.uri = info.uri
+    )
+
     document.addEventListener('scroll', @onElementScroll.bind(this))
 
   addPlugin: (name, options) ->
@@ -142,6 +148,9 @@ module.exports = class Guest extends Delegator
 
     return Promise.all([metadataPromise, uriPromise]).then ([metadata, href]) ->
       return {uri: normalizeURI(href, baseURI), metadata}
+
+  getUri: ->
+    return @uri;
 
   _connectAnnotationSync: (crossframe) ->
     this.subscribe 'annotationDeleted', (annotation) =>
