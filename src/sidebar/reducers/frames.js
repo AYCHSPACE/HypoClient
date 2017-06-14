@@ -27,6 +27,24 @@ var update = {
     return {frames: frames};
   },
 
+  ADD_FRAME_CHILD: function (state, action) {
+    // If this has a parent, then search for that frame and give it a child
+    var parentUri = action.frame.parentUri;
+    var frames = state.frames;
+
+    if (parentUri) {
+      var parent = frames.find(function(frame) {
+        return frame.uri === parentUri;
+      });
+
+      if (parent) {
+        parent.childUris.push(action.frame.uri);
+      }
+    }
+
+    return {frames: frames};
+  },
+
   CONNECT_FRAME: function (state, action) {
     return {frames: state.frames.concat(action.frame)};
   },
@@ -37,6 +55,32 @@ var update = {
       state.frames.splice(index, 1);
     }
     return {frames: state.frames};
+  },
+
+  DESTROY_FRAME_CHILD: function (state, action) {
+    // Remove the specified child from its parent
+    var parentUri = action.frame.parentUri;
+    var frames = state.frames;
+
+    if (parentUri) {
+      var parent = frames.find(function(frame) {
+        return frame.uri === parentUri;
+      });
+
+      if (parent) {
+        var childUri = action.frame.uri;
+        var index = parent.childUris.findIndex(function(uri) {
+          return uri === childUri;
+        });
+
+        if (index > -1) {
+          // If multiple children share the same uri, then only remove one of them
+          parent.childUris.splice(index, 1);
+        }
+      }
+    }
+
+    return {frames: frames};
   },
 
   UPDATE_FRAME_ANNOTATION_FETCH_STATUS: function (state, action) {
@@ -66,9 +110,18 @@ function addFrameAnnotations(annotations) {
 }
 
 /**
+ * Add the child uri to the list of children in the parent
+ */
+function addFrameChild(frame) {
+  return {type: actions.ADD_FRAME_CHILD, frame: frame};
+}
+
+/**
  * Add a frame to the list of frames currently connected to the sidebar app.
  */
 function connectFrame(frame) {
+  annotationUI.addFrameChild(frame);
+
   return {type: actions.CONNECT_FRAME, frame: frame};
 }
 
@@ -87,7 +140,17 @@ function destroyFrame(frame) {
     annotationUI.removeAnnotations(annots);
   }
 
+  // Remove the child from the parent
+  annotationUI.destroyFrameChild(frame);
+
   return {type: actions.DESTROY_FRAME, frame: frame};
+}
+
+/**
+ * Remove the specified child from the list of children in the parent
+ */
+function destroyFrameChild(frame) {
+  return {type: actions.DESTROY_FRAME_CHILD, frame: frame};
 }
 
 /**
@@ -114,8 +177,10 @@ module.exports = {
 
   actions: {
     addFrameAnnotations: addFrameAnnotations,
+    addFrameChild: addFrameChild,
     connectFrame: connectFrame,
     destroyFrame: destroyFrame,
+    destroyFrameChild: destroyFrameChild,
     updateFrameAnnotationFetchStatus: updateFrameAnnotationFetchStatus,
   },
 

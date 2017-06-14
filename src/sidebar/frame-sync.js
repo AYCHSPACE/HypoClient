@@ -236,7 +236,9 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       annotationUI.connectFrame({
         uri: info.uri,
         searchUris: searchUris,
+        parentUri: channel.parentUri || null,
         documentFingerprint: documentFingerprint,
+        childUris: [],
       });
     });
   }
