@@ -126,7 +126,11 @@ module.exports = class Discovery
       source.postMessage message, origin
 
     if discovered
-      @onDiscovery.call(null, source, origin, token, uri, parentUri)
+      options =
+        uri: uri
+        parentUri: parentUri
+
+      @onDiscovery.call(null, source, origin, token, options)
 
     return
 

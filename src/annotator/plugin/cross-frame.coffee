@@ -41,8 +41,8 @@ module.exports = class CrossFrame extends Plugin
     annotator = null
 
     this.pluginInit = ->
-      onDiscoveryCallback = (source, origin, token) ->
-        bridge.createChannel(source, origin, token)
+      onDiscoveryCallback = (source, origin, token, options) ->
+        bridge.createChannel(source, origin, token, options)
       discovery.startDiscovery(onDiscoveryCallback)
 
       annotator = this.annotator

@@ -21,7 +21,7 @@ module.exports = class Bridge
     for link in @links
       link.channel.destroy()
 
-  createChannel: (source, origin, token, uri, parentUri) ->
+  createChannel: (source, origin, token, options) ->
     channel = null
     connected = false
 
@@ -39,7 +39,7 @@ module.exports = class Bridge
     listeners = extend({connect}, @channelListeners)
 
     # Set up a channel
-    channel = new RPC(window, source, origin, listeners, uri, parentUri)
+    channel = new RPC(window, source, origin, listeners, options)
 
     # Fire off a connection attempt
     channel.call('connect', token, ready)

@@ -33,13 +33,13 @@ var VERSION = '1.0.0';
 
 module.exports = RPC;
 
-function RPC (src, dst, origin, methods, uri, parentUri) {
-    if (!(this instanceof RPC)) return new RPC(src, dst, origin, methods, uri, parentUri);
+function RPC (src, dst, origin, methods, options) {
+    if (!(this instanceof RPC)) return new RPC(src, dst, origin, methods, options);
     var self = this;
     this.src = src;
     this.dst = dst;
-    this.uri = uri;
-    this.parentUri = parentUri;
+    this.uri = options.uri;
+    this.parentUri = options.parentUri;
     
     if (origin === '*') {
         this.origin = '*';
