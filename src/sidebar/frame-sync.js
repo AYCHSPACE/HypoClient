@@ -193,6 +193,21 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       bridge.call('scrollToAnnotation', tag);
     });
 
+    // THESIS TODO: Investigate better solutions
+    // This solution is very inconsistent
+    bridge.on('scrollToFrame', function (options) {
+      if (options.args) {
+        var callerUri = options.caller;
+        var recipient = options.recipient;
+        var frameData = options.args[0];
+
+        bridge.call({
+          method: 'scrollToFrame',
+          scope: [recipient],
+        }, frameData);
+      }
+    });
+
     bridge.on('setVisibleHighlights', function (state) {
       bridge.call('setVisibleHighlights', state);
     });
