@@ -174,6 +174,37 @@ module.exports = class Guest extends Delegator
         if anchor.annotation.$tag is tag
           scrollIntoView(anchor.highlights[0])
 
+          if this.parentUri
+            frameElement = window.frameElement;
+            frameData =
+              offsetTop: frameElement.offsetTop
+              height: frameElement.offsetHeight
+
+            # THESIS TODO: Investigate if there are more elegant solutions
+            # Also see frame-sync.js
+            @crossframe.call('scrollToFrame',
+              args: [frameData]
+              caller: @uri
+              recipient: @parentUri
+            )
+
+    crossframe.on 'scrollToFrame', (frameData) =>
+      # THESIS TODO: Find a better solution. For now, scroll directly to the location on the Y-Axis only
+      height = @element[0].clientHeight
+      window.scrollTo(0, frameData.offsetTop - (height - frameData.height) / 2)
+
+      if this.parentUri
+        frameElement = window.frameElement;
+        frameData =
+          offsetTop: frameElement.offsetTop
+          height: frameElement.offsetHeight
+
+        @crossframe.call('scrollToFrame',
+          args: [frameData]
+          caller: @uri
+          recipient: @parentUri
+        )
+
     crossframe.on 'getDocumentInfo', (cb) =>
       this.getDocumentInfo()
       .then((info) -> cb(null, info))
