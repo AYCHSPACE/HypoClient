@@ -19,10 +19,11 @@ function injectHypothesis (iframe, options) {
   config.type = 'application/json';
 
   var configData = {
+    embedScriptUrl: options.embedScriptUrl,
     enableMultiFrameSupport: true,
     parentUri: options.parentUri,
     subFrameInstance: true,
-  }
+  };
   config.innerText = JSON.stringify(configData);
 
   var src = options.embedScriptUrl;

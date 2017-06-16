@@ -136,7 +136,7 @@ function destroyFrame(frame) {
 
   // If two frames share the same uri then don't delete the annotations, because
   // in that scenario we can't figure out which annotation belongs to which frame.
-  if (Object.keys(frames).length === 1) {
+  if (Object.keys(frames).length === 1 && annots) {
     annotationUI.removeAnnotations(annots);
   }
 

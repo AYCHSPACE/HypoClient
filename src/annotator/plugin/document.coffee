@@ -30,8 +30,7 @@ module.exports = class Document extends Plugin
         uri = link.href
 
     if (this._isBlob(uri))
-      dataSet = window.frameElement && window.frameElement.dataset
-      if (dataSet && dataSet.src) then uri = decodeURIComponent dataSet.src
+      uri = decodeURIComponent document.baseURI
 
     return uri
 
