@@ -56,9 +56,6 @@ module.exports = class Host extends Guest
 
     @crossframe.on 'panelReady', (isDefaultFrame) =>
       # Initialize tool state.
-      if config.showHighlights == undefined
-        # Highlights are on by default.
-        config.showHighlights = 'always'
       this.setAllVisibleHighlights(config.showHighlights == 'always')
 
       if (isDefaultFrame)

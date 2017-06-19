@@ -231,27 +231,16 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
    */
   function addFrame(channel) {
     channel.call('getDocumentInfo', function (err, info) {
-      var searchUris = [];
-
       if (err) {
         channel.destroy();
-      } else {
-        searchUris = [info.uri];
-      }
-
-      var documentFingerprint;
-      if (info.metadata && info.metadata.documentFingerprint) {
-        documentFingerprint = info.metadata.documentFingerprint;
-        searchUris = info.metadata.link.map(function (link) {
-          return link.href;
-        });
+        return;
       }
 
       annotationUI.connectFrame({
+        metadata: info.metadata,
         uri: info.uri,
         searchUris: searchUris,
         parentUri: channel.parentUri || null,
-        documentFingerprint: documentFingerprint,
         childUris: [],
       });
     });

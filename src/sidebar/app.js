@@ -1,6 +1,7 @@
 'use strict';
 
 var addAnalytics = require('./ga');
+var getApiUrl = require('./get-api-url');
 var serviceConfig = require('./service-config');
 require('../shared/polyfills');
 
@@ -18,6 +19,8 @@ if (settings.raven) {
 
 var hostPageConfig = require('./host-config');
 Object.assign(settings, hostPageConfig(window));
+
+settings.apiUrl = getApiUrl(settings);
 
 // Disable Angular features that are not compatible with CSP.
 //
@@ -189,7 +192,6 @@ module.exports = angular.module('h', [
   .service('formRespond', require('./form-respond'))
   .service('frameSync', require('./frame-sync').default)
   .service('groups', require('./groups'))
-  .service('host', require('./host'))
   .service('localStorage', require('./local-storage'))
   .service('permissions', require('./permissions'))
   .service('queryParser', require('./query-parser'))
@@ -209,6 +211,7 @@ module.exports = angular.module('h', [
   .value('ExcerptOverflowMonitor', require('./util/excerpt-overflow-monitor'))
   .value('VirtualThreadList', require('./virtual-thread-list'))
   .value('raven', require('./raven'))
+  .value('serviceConfig', serviceConfig)
   .value('settings', settings)
   .value('time', require('./time'))
   .value('urlEncodeFilter', require('./filter/url').encode)
