@@ -10,23 +10,6 @@ function init() {
 }
 
 var update = {
-  ADD_FRAME_ANNOTATIONS: function (state, action) {
-    var annotationsByUri = {};
-
-    var frames = state.frames.map(function (frame) {
-      var uri = frame.uri;
-
-      var annotations = action.annotations.filter(function(annotation) {
-        return annotation.uri === uri;
-      });
-
-      frame.annotations = annotations;
-      return frame;
-    });
-
-    return {frames: frames};
-  },
-
   ADD_FRAME_CHILD: function (state, action) {
     // If this has a parent, then search for that frame and give it a child
     var parentUri = action.frame.parentUri;
@@ -83,6 +66,21 @@ var update = {
     return {frames: frames};
   },
 
+  UPDATE_FRAME_ANNOTATIONS: function (state, action) {
+    var frames = state.frames.map(function (frame) {
+      var uri = frame.uri;
+
+      var annotations = action.annotations.filter(function(annotation) {
+        return annotation.uri === uri;
+      });
+
+      frame.annotations = annotations;
+      return frame;
+    });
+
+    return {frames: frames};
+  },
+
   UPDATE_FRAME_ANNOTATION_FETCH_STATUS: function (state, action) {
     var frames = state.frames.map(function (frame) {
       var match = (frame.uri && frame.uri === action.uri);
@@ -101,13 +99,6 @@ var update = {
 };
 
 var actions = util.actionTypes(update);
-
-/**
- * Add the annotations to their respective frames
- */
-function addFrameAnnotations(annotations) {
-  return {type: actions.ADD_FRAME_ANNOTATIONS, annotations: annotations};
-}
 
 /**
  * Add the child uri to the list of children in the parent
@@ -154,6 +145,13 @@ function destroyFrameChild(frame) {
 }
 
 /**
+ * Add the annotations to their respective frames
+ */
+function updateFrameAnnotations(annotations) {
+  return {type: actions.UPDATE_FRAME_ANNOTATIONS, annotations: annotations};
+}
+
+/**
  * Update the `isAnnotationFetchComplete` flag of the frame.
  */
 function updateFrameAnnotationFetchStatus(uri, status) {
@@ -176,7 +174,7 @@ module.exports = {
   update: update,
 
   actions: {
-    addFrameAnnotations: addFrameAnnotations,
+    updateFrameAnnotations: updateFrameAnnotations,
     addFrameChild: addFrameChild,
     connectFrame: connectFrame,
     destroyFrame: destroyFrame,

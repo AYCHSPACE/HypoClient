@@ -263,7 +263,7 @@ function addAnnotations(annotations, now) {
       annotations: annotations,
     });
 
-    annotationUI.addFrameAnnotations(getState().annotations);
+    annotationUI.updateFrameAnnotations(getState().annotations);
 
     if (!getState().isSidebar) {
       return;
@@ -297,6 +297,19 @@ function addAnnotations(annotations, now) {
 
 /** Remove annotations from the currently displayed set. */
 function removeAnnotations(annotations) {
+
+  // THESIS TODO: At some point, look for a better solution
+  // This one is far too error prone, and requires too much maintenance.
+  // 
+  // When a better solution is found, ensure that all changes to annotations
+  // are reflected within the frames as well. A listener pattern of some sort
+  // would be ideal, imo.
+  //
+  // Ctrl + F in frames.js, and annotations.js for "annotationUI" when cleaning up.
+  var state = annotationUI.getState();
+  var annots = excludeAnnotations(state.annotations, annotations);
+  annotationUI.updateFrameAnnotations(annots);
+
   return {
     type: actions.REMOVE_ANNOTATIONS,
     annotations: annotations,
@@ -305,6 +318,8 @@ function removeAnnotations(annotations) {
 
 /** Set the currently displayed annotations to the empty set. */
 function clearAnnotations() {
+  annotationUI.updateFrameAnnotations([]);
+
   return {type: actions.CLEAR_ANNOTATIONS};
 }
 
@@ -317,6 +332,8 @@ function clearAnnotations() {
  * @param {boolean} isOrphan - True if the annotation failed to anchor
  */
 function updateAnchorStatus(id, tag, isOrphan) {
+  annotationUI.updateFrameAnnotations(annotationUI.getState().annotations);
+
   return {
     type: actions.UPDATE_ANCHOR_STATUS,
     id: id,

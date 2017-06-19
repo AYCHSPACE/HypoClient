@@ -197,7 +197,6 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
     // This solution is very inconsistent
     bridge.on('scrollToFrame', function (options) {
       if (options.args) {
-        var callerUri = options.caller;
         var recipient = options.recipient;
         var frameData = options.args[0];
 
