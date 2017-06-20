@@ -23,6 +23,7 @@ function configFrom(window_) {
     enableMultiFrameSupport: settings.hostPageSetting('enableMultiFrameSupport'),
     embedScriptUrl: settings.hostPageSetting('embedScriptUrl'),
     subFrameInstance: settings.hostPageSetting('subFrameInstance'),
+    parentUri: settings.hostPageSetting('parentUri'),
   };
 }
 

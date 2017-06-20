@@ -239,7 +239,6 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       annotationUI.connectFrame({
         metadata: info.metadata,
         uri: info.uri,
-        searchUris: searchUris,
         parentUri: channel.parentUri || null,
         childUris: [],
       });

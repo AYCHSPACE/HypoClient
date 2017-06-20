@@ -69,7 +69,14 @@ module.exports = class CrossFrame extends Plugin
     _injectToFrame = (frame) ->
       if !FrameUtil.hasHypothesis(frame)
         FrameUtil.isLoaded frame, () ->
-          FrameUtil.injectHypothesis(frame, options)
+          # THESIS TODO: Come back to this at some point
+          uri = annotator.getDocumentInfo()
+          .then (info) ->
+            uri = info.uri
+            FrameUtil.injectHypothesis(frame,
+              embedScriptUrl: options.embedScriptUrl
+              parentUri: uri
+            )
 
     _iframeUnloaded = (frame) ->
       # TODO: Bridge call here not yet implemented, placeholder for now
