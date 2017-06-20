@@ -71,5 +71,9 @@ module.exports = class CrossFrame extends Plugin
             )
 
     _iframeUnloaded = (frame) ->
-      # TODO: Bridge call here not yet implemented, placeholder for now
-      bridge.call('destroyFrame', frame.src);
+      # TODO: At some point, look into more maintainable solutions
+      uri = frame.src
+      if uri.includes('blob:')
+        uri = frame.contentDocument.baseURI
+
+      bridge.call('destroyFrame', uri);
