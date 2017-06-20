@@ -13,7 +13,7 @@ function init() {
 }
 
 var update = {
-  ADD_FRAME_CHILD: function (state, action) {
+  ADD_TO_PARENT: function (state, action) {
     // If this has a parent, then search for that frame and give it a child
     var parentUri = action.frame.parentUri;
     var frames = state.frames;
@@ -43,7 +43,7 @@ var update = {
     return {frames: state.frames};
   },
 
-  DESTROY_FRAME_CHILD: function (state, action) {
+  REMOVE_FROM_PARENT: function (state, action) {
     // Remove the specified child from its parent
     var parentUri = action.frame.parentUri;
     var frames = state.frames;
@@ -106,16 +106,14 @@ var actions = util.actionTypes(update);
 /**
  * Add the child uri to the list of children in the parent
  */
-function addFrameChild(frame) {
-  return {type: actions.ADD_FRAME_CHILD, frame: frame};
+function addToParent(frame) {
+  return {type: actions.ADD_TO_PARENT, frame: frame};
 }
 
 /**
  * Add a frame to the list of frames currently connected to the sidebar app.
  */
 function connectFrame(frame) {
-  annotationUI.addFrameChild(frame);
-
   return {type: actions.CONNECT_FRAME, frame: frame};
 }
 
@@ -123,28 +121,14 @@ function connectFrame(frame) {
  * Remove a frame from the list of frames currently connected to the sidebar app.
  */
 function destroyFrame(frame) {
-  var annots = frame.annotations;
-  var frames = annotationUI.frames().filter(function(f) {
-    return f.uri === frame.uri;
-  });
-
-  // If two frames share the same uri then don't delete the annotations, because
-  // in that scenario we can't figure out which annotation belongs to which frame.
-  if (Object.keys(frames).length === 1 && annots) {
-    annotationUI.removeAnnotations(annots);
-  }
-
-  // Remove the child from the parent
-  annotationUI.destroyFrameChild(frame);
-
   return {type: actions.DESTROY_FRAME, frame: frame};
 }
 
 /**
  * Remove the specified child from the list of children in the parent
  */
-function destroyFrameChild(frame) {
-  return {type: actions.DESTROY_FRAME_CHILD, frame: frame};
+function removeFromParent(frame) {
+  return {type: actions.REMOVE_FROM_PARENT, frame: frame};
 }
 
 /**
@@ -211,10 +195,10 @@ module.exports = {
 
   actions: {
     updateFrameAnnotations: updateFrameAnnotations,
-    addFrameChild: addFrameChild,
+    addToParent: addToParent,
     connectFrame: connectFrame,
     destroyFrame: destroyFrame,
-    destroyFrameChild: destroyFrameChild,
+    removeFromParent: removeFromParent,
     updateFrameAnnotationFetchStatus: updateFrameAnnotationFetchStatus,
   },
 

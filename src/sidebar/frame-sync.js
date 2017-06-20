@@ -67,6 +67,44 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       var addedByUri = {};
       var frames = annotationUI.frames();
 
+      var annotationsChanged = function() {
+        var hasChanged = false;
+
+        if (state.annotations.length !== prevAnnotations.length) {
+          hasChanged = true;
+        }
+        else {
+          var byId = function(a1, a2) {
+            return a1.id < a2.id;
+          }
+
+          var sorted = state.annotations.sort(byId);
+          var prevSorted = prevAnnotations.sort(byId);
+
+          sorted.find(function (annot, index) {
+            var prevAnnot = prevSorted[index];
+
+            if (!prevAnnot || annot.updated !== prevAnnot.updated) {
+              hasChanged = true;
+            }
+
+            return hasChanged;
+          });
+        }
+
+        return hasChanged;
+      };
+
+      // THESIS TODO: Ideally, it would be nice if the frame annotations were updated
+      // in the background. Maybe with some kind of listener pattern.
+      // Eg. When annotations are modified, then those same annotations are modifed
+      // within the frame states as well.
+      if ( annotationsChanged() ) {
+        setTimeout(function() {
+          annotationUI.updateFrameAnnotations(state.annotations)
+        }, 0);
+      }
+
       state.annotations.forEach(function (annot) {
         var uri = annot.uri;
         if (metadata.isReply(annot)) {
@@ -236,12 +274,15 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
         return;
       }
 
-      annotationUI.connectFrame({
+      var frame = {
         metadata: info.metadata,
         uri: info.uri,
         parentUri: channel.parentUri || null,
         childUris: [],
-      });
+      };
+
+      annotationUI.connectFrame(frame);
+      annotationUI.addToParent(frame);
     });
   }
 
@@ -251,6 +292,19 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       return frame.uri === uri;
     });
     if (frameToDestroy) {
+      var annots = frameToDestroy.annotations;
+      var frames = annotationUI.frames().filter(function(f) {
+        return f.uri === frameToDestroy.uri;
+      });
+
+      // If two frames share the same uri then don't delete the annotations, because
+      // in that scenario we can't figure out which annotation belongs to which frame.
+      if (Object.keys(frames).length === 1 && annots) {
+        annotationUI.removeAnnotations(annots);
+      }
+
+      // Remove the child from the parent
+      annotationUI.removeFromParent(frameToDestroy);
       annotationUI.destroyFrame(frameToDestroy);
     }
   }
