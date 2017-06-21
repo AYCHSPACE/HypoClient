@@ -37,7 +37,7 @@ module.exports = class CrossFrame extends Plugin
       discovery.startDiscovery(onDiscoveryCallback)
 
       if options.enableMultiFrameSupport
-        frameObserver.observe(_injectToFrame, _iframeUnloaded);
+        frameObserver.observe(_injectToFrame.bind(this), _iframeUnloaded);
 
     this.destroy = ->
       # super doesnt work here :(
@@ -62,7 +62,7 @@ module.exports = class CrossFrame extends Plugin
       if !FrameUtil.hasHypothesis(frame)
         FrameUtil.isLoaded frame, () =>
           # THESIS TODO: Come back to this at some point
-          uri = annotator.getDocumentInfo()
+          uri = this.annotator.getDocumentInfo()
           .then (info) ->
             uri = info.uri
             FrameUtil.injectHypothesis(frame,
