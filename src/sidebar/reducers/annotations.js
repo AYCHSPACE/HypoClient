@@ -67,6 +67,7 @@ function initializeAnnot(annotation, tag) {
     $anchorTimeout: false,
     $tag: annotation.$tag || tag,
     $orphan: orphan,
+    $frameUri: annotation.$frameUri || annotation.uri,
   });
 }
 
@@ -91,16 +92,6 @@ var update = {
     var nextTag = state.nextTag;
 
     action.annotations.forEach(function (annot) {
-      // THESIS TODO: This is a temporary workaround
-      // We're getting annotations from frames that don't exist yet
-      // Until it's fixed, we ignore them
-      var hasFrame = state.frames.find(function(frame) {
-        return frame.uri === annot.uri;
-      });
-      if (!hasFrame) {
-        return;
-      }
-
       var existing;
       if (annot.id) {
         existing = findByID(state.annotations, annot.id);

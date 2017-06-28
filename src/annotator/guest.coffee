@@ -233,9 +233,6 @@ module.exports = class Guest extends Delegator
   anchor: (annotation) ->
     self = this
     root = @element[0]
-    # THESIS TODO: For the time being, ignore other annotations
-    # In the future, guests should never get annotations that don't belong to them
-    if (annotation.uri != this.plugins.Document.uri()) then return
 
     # Anchors for all annotations are in the `anchors` instance property. These
     # are anchors for this annotation only. After all the targets have been

@@ -122,6 +122,10 @@ function SidebarContentController(
       }
 
       if (results.length) {
+        // Let each annotation know which frame they belong to
+        results.forEach(function(annot) {
+          annot.$frameUri = uris[0];
+        });
         annotationMapper.loadAnnotations(results);
       }
     });
@@ -182,7 +186,11 @@ function SidebarContentController(
 
     var searchUris = annotationUI.searchUris();
     if (searchUris.length > 0) {
-      _loadAnnotationsFor(searchUris, group);
+      // A separate request is made for each frame
+      // That way, we know which response belongs to which frame
+      annotationUI.frames().forEach(function(frame) {
+        _loadAnnotationsFor([frame.uri], group);
+      });
 
       streamFilter.resetFilter().addClause('/uri', 'one_of', searchUris);
       streamer.setConfig('filter', {filter: streamFilter.getFilter()});

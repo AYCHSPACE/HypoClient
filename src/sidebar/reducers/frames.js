@@ -19,7 +19,7 @@ var update = {
       var uri = frame.uri;
 
       var annotations = action.annotations.filter(function(annotation) {
-        return annotation.uri === uri;
+        return annotation.$frameUri === uri;
       });
 
       frame.annotations = annotations;

@@ -106,7 +106,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       }
 
       state.annotations.forEach(function (annot) {
-        var uri = annot.uri;
+        var uri = annot.$frameUri;
         if (metadata.isReply(annot)) {
           // The frame does not need to know about replies
           return;
@@ -136,7 +136,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       if (Object.keys(addedByUri).length > 0) {
         Object.keys(addedByUri).forEach(function(key) {
           var added = addedByUri[key];
-          var channelUri = added[0].uri;
+          var channelUri = added[0].$frameUri;
           bridge.call({
             method: 'loadAnnotations',
             scope: [channelUri],
@@ -149,7 +149,7 @@ function FrameSync($rootScope, $window, Discovery, annotationUI, bridge) {
       }
 
       deleted.forEach(function (annot) {
-        var channelUri = annot.uri;
+        var channelUri = annot.$frameUri;
         bridge.call({
           method: 'deleteAnnotation',
           scope: [channelUri],
