@@ -33,7 +33,7 @@ exports.removeHighlights = (highlights) ->
 # Unfortunately, Chrome has issues[1] with Range.getBoundingClient rect or we
 # could just use that.
 # [1] https://code.google.com/p/chromium/issues/detail?id=324437
-exports.getBoundingClientRect = (collection) ->
+exports.getBoundingClientRect = getBoundingClientRect = (collection) ->
   # Reduce the client rectangles of the highlights to a bounding box
   rects = collection.map((n) -> n.getBoundingClientRect())
   return rects.reduce (acc, r) ->
@@ -43,7 +43,7 @@ exports.getBoundingClientRect = (collection) ->
     right: Math.max(acc.right, r.right)
 
 exports.getBoundingClientRectAsObject = (collection) ->
-  rect = @getBoundingClientRect(collection)
+  rect = getBoundingClientRect(collection)
   result = {}
   for key, prop of rect
     result[key] = prop
