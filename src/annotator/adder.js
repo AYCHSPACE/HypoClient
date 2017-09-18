@@ -196,6 +196,7 @@ function Adder(container, options) {
    * @return {Target}
    */
   this.target = function (targetRect, isSelectionBackwards) {
+    console.log(targetRect);
     // Set the initial arrow direction based on whether the selection was made
     // forwards/upwards or downwards/backwards.
     var arrowDirection;
@@ -232,11 +233,11 @@ function Adder(container, options) {
     }
 
     // Constrain the adder to the viewport.
-    left = Math.max(left, 0);
-    left = Math.min(left, view.innerWidth - width());
+    // left = Math.max(left, 0);
+    // left = Math.min(left, view.innerWidth - width());
 
-    top = Math.max(top, 0);
-    top = Math.min(top, view.innerHeight - height());
+    // top = Math.max(top, 0);
+    // top = Math.min(top, view.innerHeight - height());
 
     return {top, left, arrowDirection};
   };
@@ -270,11 +271,11 @@ function Adder(container, options) {
     // `<html>` element. However page styling may make the `<body>` positioned.
     // See https://github.com/hypothesis/client/issues/487.
     var positionedAncestor = nearestPositionedAncestor(container);
-    var parentRect = positionedAncestor.getBoundingClientRect();
+    // var parentRect = positionedAncestor.getBoundingClientRect();
 
     Object.assign(container.style, {
-      top: toPx(top - parentRect.top),
-      left: toPx(left - parentRect.left),
+      top: toPx(top - positionedAncestor.offsetTop),
+      left: toPx(left - positionedAncestor.offsetLeft),
     });
     self.element.style.visibility = 'visible';
 

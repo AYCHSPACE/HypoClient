@@ -125,9 +125,67 @@ function selectionFocusRect(selection) {
   }
 }
 
+/**
+ * Returns the rectangle, in viewport coordinates, for the line of text
+ * containing the focus point of a Selection.
+ *
+ * Returns null if the selection is empty.
+ *
+ * @param {Selection} selection
+ * @return {Rect|null}
+ */
+function selectionFocusRectX(selection) {
+  if (selection.isCollapsed) {
+    return null;
+  }
+
+  var boundaryPointRange = selection.getRangeAt(0).cloneRange();
+  var backwards = isSelectionBackwards(selection);
+  // Collapse range to a boundary point based on the selection direction
+  boundaryPointRange.collapse(backwards);
+  var targetNodeParent = boundaryPointRange.commonAncestorContainer.parentNode;
+  var selectionRect = selectionFocusRect(selection);
+  var parentRects = Array.from(targetNodeParent.getClientRects());
+
+  var parentRect = parentRects.find(function (rect) {
+    return ((selectionRect.left - rect.left) >= 0) && ((selectionRect.top - rect.top) >= 0);
+  });
+
+  var selectionLeftOffset = selectionRect.left - parentRect.left;
+  var selectionTopOffset = selectionRect.top - parentRect.top;
+
+  console.log(selectionLeftOffset, selectionTopOffset);
+
+  if (targetNodeParent && targetNodeParent.offsetParent) {
+    var offsetsRect = traceOffsetsAcrossAllOffsetParents(targetNodeParent);
+    console.log(offsetsRect);
+    var newRect = new DOMRect(offsetsRect.x + selectionLeftOffset, offsetsRect.y + selectionTopOffset, selectionRect.width, selectionRect.height);
+    console.log(newRect);
+    return newRect;
+  } else {
+    return selectionRect;
+  }
+}
+
+function traceOffsetsAcrossAllOffsetParents(node) {
+  if (node.offsetParent) {
+    var parentResult = traceOffsetsAcrossAllOffsetParents(node.offsetParent);
+    return {
+      x: parentResult.x + node.offsetLeft,
+      y: parentResult.y + node.offsetTop,
+    };
+  } else {
+    return {
+      x: 0,
+      y: 0,
+    };
+  }
+}
+
+
 module.exports = {
   getTextBoundingBoxes: getTextBoundingBoxes,
   isNodeInRange: isNodeInRange,
   isSelectionBackwards: isSelectionBackwards,
-  selectionFocusRect: selectionFocusRect,
+  selectionFocusRect: selectionFocusRectX,
 };
